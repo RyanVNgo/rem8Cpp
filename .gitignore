@@ -1,0 +1,8 @@
+build/
+debug/
+release/
+.cache/
+
+*.ini
+!DefaultPanelLayout.ini
+
