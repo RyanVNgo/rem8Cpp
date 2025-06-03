@@ -15,11 +15,13 @@
 
 #include <vector>
 
+#include "emulator.h"
+#include "widgets/control_panel.h"
 #include "utilities/instrumentor.h"
 
-void initialize_screen_texture(GLuint& texture, size_t width, size_t height, void* data);
+void initialize_screen_texture(GLuint& texture, size_t width, size_t height);
+void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data);
 void draw_screen_texture(GLuint texture);
-void update_screen_data(std::vector<unsigned char>& pixel_data);
 
 int main() {
 #if defined(PROFILING)
@@ -89,16 +91,17 @@ int main() {
   }
 
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(0); // Enable vsync
+  bool vsync = true;
+  SDL_GL_SetSwapInterval(vsync); // Enable vsync
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO(); (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable Multi-Viewport / Platform Windows
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -114,9 +117,14 @@ int main() {
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
+  auto emulator = rem8Cpp();
+  auto control_panel = ControlPanel(io);
+
+  size_t screen_width = emulator.width();
+  size_t screen_height = emulator.height();
   GLuint screen_texture;
-  std::vector<unsigned char> frame_buffer(width * height * 3);
-  initialize_screen_texture(screen_texture, width, height, frame_buffer.data());
+  std::vector<unsigned char> frame_buffer(screen_width * screen_height * 3);
+  initialize_screen_texture(screen_texture, screen_width, screen_height);
 
   // Main loop
   bool done = false;
@@ -133,38 +141,32 @@ int main() {
           done = true;
       if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
           done = true;
+      if (event.type == SDL_KEYDOWN) emulator.set_key(event.key.keysym.sym);
+      if (event.type == SDL_KEYUP) emulator.unset_key(event.key.keysym.sym);
     }
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
       SDL_Delay(10);
       continue;
     }
 
-    update_screen_data(frame_buffer);
-    glTexSubImage2D(
-        GL_TEXTURE_2D,
-        0, 0, 0,
-        width, height,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        frame_buffer.data()
-    );
+    // Emulator cycling and screen updating
+    emulator.cycle();
+    std::vector<unsigned char> frame_buffer = emulator.get_screen_rgb();
+    update_screen_texture(screen_texture, screen_width, screen_height, frame_buffer);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("App Info");
-    ImGui::Text("mpf: %.3f", 1000.0f / io.Framerate);
-    ImGui::Text("fps: %.3f", io.Framerate);
-    ImGui::End();
+    // App ImGui Componenets
+    control_panel.render();
 
     // Rendering
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     draw_screen_texture(screen_texture);
-
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -197,7 +199,7 @@ int main() {
   return 0;
 }
 
-void initialize_screen_texture(GLuint& texture, size_t width, size_t height, void* data) {
+void initialize_screen_texture(GLuint& texture, size_t width, size_t height) {
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -211,25 +213,30 @@ void initialize_screen_texture(GLuint& texture, size_t width, size_t height, voi
       0, 
       GL_RGB, 
       GL_UNSIGNED_BYTE, 
-      data
+      nullptr
   ); 
+}
+
+void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data) {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0, 0, 0,
+        width, height,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        data.data()
+    );
 }
 
 void draw_screen_texture(GLuint texture) {
   glBindTexture(GL_TEXTURE_2D, texture);
   glEnable(GL_TEXTURE_2D);
-
   glBegin(GL_QUADS);
   glTexCoord2f(0.0f, 0.0f); glVertex2f(-1, 1);
   glTexCoord2f(1.0f, 0.0f); glVertex2f(1, 1);
   glTexCoord2f(1.0f, 1.0f); glVertex2f(1, -1);
   glTexCoord2f(0.0f, 1.0f); glVertex2f(-1, -1);
   glEnd();
-}
-
-void update_screen_data(std::vector<unsigned char>& pixel_data) {
-  for (size_t i = 0; i < pixel_data.size(); i++) {
-    pixel_data[i] = rand() / 255;
-  }
 }
 
