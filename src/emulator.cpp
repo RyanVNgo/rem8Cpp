@@ -165,12 +165,10 @@ const std::vector<uint8_t>& rem8Cpp::get_screen() const {
   return screen_;
 }
 
-std::vector<unsigned char> rem8Cpp::get_screen_rgb() const {
-  std::vector<unsigned char> screen_rgb(width_ * height_ * 3);
+void rem8Cpp::get_screen_rgb(std::vector<unsigned char>& buffer) const {
   for (std::size_t i = 0; i < screen_.size(); i++) {
-    memset(screen_rgb.data() + i * 3, (screen_[i] & 0x01) * UCHAR_MAX, sizeof(unsigned char) * 3);
+    memset(buffer.data() + i * 3, (screen_[i] & 0x01) * UCHAR_MAX, sizeof(unsigned char) * 3);
   }
-  return screen_rgb;
 }
 
 void rem8Cpp::set_program_counter(uint16_t addr) {

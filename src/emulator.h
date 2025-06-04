@@ -15,7 +15,7 @@ class rem8Cpp {
 
     void cycle();
     const std::vector<uint8_t>& get_screen() const;
-    std::vector<unsigned char> get_screen_rgb() const;
+    void get_screen_rgb(std::vector<unsigned char>& buffer) const;
 
     void set_program_counter(uint16_t addr);
     void load_rom(uint16_t addr, std::vector<char> data, size_t size);

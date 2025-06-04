@@ -6,6 +6,8 @@
 #pragma once
 
 #include <filesystem>
+#include <chrono>
+
 #include "imgui.h"
 
 #include "file_explorer.h"
@@ -25,6 +27,9 @@ class ControlPanel{
 
   private:
     FileExplorer file_explorer_;
+    std::chrono::high_resolution_clock::time_point time_last_;
+    std::chrono::high_resolution_clock::time_point time_curr_;
+    float framerate_;
     ImGuiIO& io_;
     bool pause_;
     std::filesystem::path selected_rom_;

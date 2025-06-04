@@ -5,11 +5,16 @@
 
 #include "control_panel.h"
 
+#include <chrono>
+
 #include "imgui.h"
 
 
 ControlPanel::ControlPanel(ImGuiIO& io) 
   : file_explorer_(FileExplorer()),
+    time_last_(std::chrono::high_resolution_clock::now()),
+    time_curr_(std::chrono::high_resolution_clock::now()),
+    framerate_(0.0f),
     io_(io),
     pause_(true),
     load_addr_(0x0200),
@@ -20,14 +25,21 @@ ControlPanel::ControlPanel(ImGuiIO& io)
 void ControlPanel::render() {
   ImGui::Begin("Control Panel");
 
-  ImGui::Text("mpf: %.3f", 1000.0f / io_.Framerate);
-  ImGui::Text("fps: %.3f", io_.Framerate);
+  time_curr_ = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(time_curr_ - time_last_);
+  if (time_span.count() >= 0.1f) {
+    framerate_ = io_.Framerate;
+    time_last_ = time_curr_;
+  }
+
+  ImGui::Text("mpf: %.3f", 1000.0f / framerate_);
+  ImGui::Text("fps: %.3f", framerate_); 
 
   ImGui::Spacing();
   ImGui::Separator();
   ImGui::Spacing();
 
-  if (ImGui::Button(pause_ ? "Paused" : "Resume")) {
+  if (ImGui::Button(pause_ ? "PAUSED" : "PLAYING")) {
     pause_ = !pause_;
   }
 
@@ -47,8 +59,6 @@ void ControlPanel::render() {
       pause_ = true;
     }
   }
-
-  //ImGui::ShowDemoWindow();
 
   ImGui::End();
 }

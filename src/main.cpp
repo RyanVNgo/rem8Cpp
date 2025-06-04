@@ -165,7 +165,7 @@ int main() {
     }
 
     // Screen updating
-    std::vector<unsigned char> frame_buffer = emulator.get_screen_rgb();
+    emulator.get_screen_rgb(frame_buffer);
     update_screen_texture(screen_texture, screen_width, screen_height, frame_buffer);
 
     // Start the Dear ImGui frame
