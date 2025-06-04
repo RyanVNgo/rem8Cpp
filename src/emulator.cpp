@@ -25,6 +25,9 @@
 #define KEY_ON                0x1
 #define KEY_OFF               0x0
 
+
+// Operational methods
+
 rem8Cpp::rem8Cpp() 
   : width_(REM8CPP_SCREEN_WIDTH),
     height_(REM8CPP_SCREEN_HEIGHT),
@@ -32,6 +35,9 @@ rem8Cpp::rem8Cpp()
     program_counter_(0x200),
     stack_pointer_(0x200 - 0x01),
     sprite_addr_(FONT_SET_ADDR),
+    key_pressed_(false),
+    sound_timer_(0x00),
+    delay_timer_(0x00),
     memory_(REM8CPP_MAX_ADDR, 0x00)
 { 
   _sprite_set(sprite_addr_);
@@ -39,28 +45,7 @@ rem8Cpp::rem8Cpp()
   key_binds_[0x4] = 'q'; key_binds_[0x5] = 'w'; key_binds_[0x6] = 'e'; key_binds_[0xD] = 'r';
   key_binds_[0x7] = 'a'; key_binds_[0x8] = 's'; key_binds_[0x9] = 'd'; key_binds_[0xE] = 'f';
   key_binds_[0xA] = 'z'; key_binds_[0x0] = 'x'; key_binds_[0xB] = 'c'; key_binds_[0xF] = 'v';
-}
-
-void rem8Cpp::_sprite_set(uint16_t loc) {
-  uint8_t sprite_data[80] = {
-    0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
-    0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, /* 2 */
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, /* 3 */
-    0x90, 0x90, 0xF0, 0x10, 0x10, /* 4 */
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, /* 5 */
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, /* 6 */
-    0xF0, 0x10, 0x20, 0x40, 0x40, /* 7 */
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, /* 8 */
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, /* 9 */
-    0xF0, 0x90, 0xF0, 0x90, 0x90, /* A */
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, /* B */
-    0xF0, 0x80, 0x80, 0x80, 0xF0, /* C */
-    0xE0, 0x90, 0x90, 0x90, 0xE0, /* D */
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, /* E */
-    0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
-  };
-  memcpy(&memory_[loc], sprite_data, sizeof(sprite_data));
+  memset(key_, 0x00, sizeof(uint8_t) * 0x10);
 }
 
 void rem8Cpp::cycle() {
@@ -178,6 +163,7 @@ void rem8Cpp::set_program_counter(uint16_t addr) {
 
 void rem8Cpp::load_rom(uint16_t addr, std::vector<char> data, size_t size) {
   if (addr + size >= REM8CPP_MAX_ADDR) return;
+  memset(memory_.data(), 0x00, sizeof(uint8_t) * memory_.size());
   memcpy(&memory_[addr], data.data(), size);
 }
 
@@ -206,6 +192,9 @@ void rem8Cpp::unset_key(uint8_t key) {
   }
 }
 
+
+// Diagnositc methods
+
 std::size_t rem8Cpp::width() const {
   return width_;
 }
@@ -214,13 +203,50 @@ std::size_t rem8Cpp::height() const {
   return height_;
 }
 
-uint16_t rem8Cpp::current_program_counter() const {
+uint16_t rem8Cpp::program_counter() const {
   return program_counter_;
 }
 
 uint8_t rem8Cpp::read_memory(uint16_t addr) const {
   return memory_[addr];
 }
+
+uint8_t rem8Cpp::data_register(uint8_t reg) const {
+  if (reg > 0x10) return 0xFF;
+  return data_registers_[reg];
+}
+
+uint16_t rem8Cpp::I_register() const {
+  return I_register_;
+}
+
+uint16_t rem8Cpp::stack_pointer() const {
+  return stack_pointer_;
+}
+
+uint8_t rem8Cpp::key(uint8_t key) const {
+  for (int i = 0; i < 16; i++) {
+    if (key_binds_[i] == key) {
+      return key_[i];
+    }
+  }
+  return 0xFF;
+}
+
+bool rem8Cpp::key_pressed() const {
+  return key_pressed_;
+}
+
+uint8_t rem8Cpp::sound_timer() const {
+  return sound_timer_;
+}
+
+uint8_t rem8Cpp::delay_timer() const {
+  return delay_timer_;
+}
+
+
+// Private methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 
 void rem8Cpp::_stack_push_pc() {
   memory_[stack_pointer_] = program_counter_ & 0xFF;
@@ -235,6 +261,28 @@ void rem8Cpp::_stack_pull_pc() {
   stack_pointer_++;
   uint8_t lsb = memory_[stack_pointer_];
   program_counter_ = (msb << 8) | lsb;
+}
+
+void rem8Cpp::_sprite_set(uint16_t loc) {
+  uint8_t sprite_data[80] = {
+    0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
+    0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, /* 2 */
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, /* 3 */
+    0x90, 0x90, 0xF0, 0x10, 0x10, /* 4 */
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, /* 5 */
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, /* 6 */
+    0xF0, 0x10, 0x20, 0x40, 0x40, /* 7 */
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, /* 8 */
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, /* 9 */
+    0xF0, 0x90, 0xF0, 0x90, 0x90, /* A */
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, /* B */
+    0xF0, 0x80, 0x80, 0x80, 0xF0, /* C */
+    0xE0, 0x90, 0x90, 0x90, 0xE0, /* D */
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, /* E */
+    0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
+  };
+  memcpy(&memory_[loc], sprite_data, sizeof(sprite_data));
 }
 
 char rem8Cpp::_sprite_draw(uint8_t X, uint8_t Y, char height) {

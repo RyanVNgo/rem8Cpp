@@ -10,12 +10,13 @@
 
 #include "imgui.h"
 
+#include "emulator.h"
 #include "file_explorer.h"
 
 
 class ControlPanel{
   public:
-    ControlPanel(ImGuiIO& io);
+    ControlPanel(rem8Cpp& emulator, ImGuiIO& io);
     
     void render();
     bool pause() const;
@@ -26,11 +27,12 @@ class ControlPanel{
     void unset_reload();
 
   private:
+    rem8Cpp& emulator_;
+    ImGuiIO& io_;
     FileExplorer file_explorer_;
     std::chrono::high_resolution_clock::time_point time_last_;
     std::chrono::high_resolution_clock::time_point time_curr_;
     float framerate_;
-    ImGuiIO& io_;
     bool pause_;
     std::filesystem::path selected_rom_;
     uint16_t load_addr_;
