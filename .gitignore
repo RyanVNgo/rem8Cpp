@@ -3,6 +3,9 @@ debug/
 release/
 .cache/
 
+tests/build/
+tests/Testing/
+
 *.ini
 !DefaultPanelLayout.ini
 
