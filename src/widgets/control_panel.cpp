@@ -10,12 +10,13 @@
 #include "imgui.h"
 
 
-ControlPanel::ControlPanel(ImGuiIO& io) 
-  : file_explorer_(FileExplorer()),
+ControlPanel::ControlPanel(rem8Cpp& emulator, ImGuiIO& io) 
+  : emulator_(emulator),
+    io_(io),
+    file_explorer_(FileExplorer()),
     time_last_(std::chrono::high_resolution_clock::now()),
     time_curr_(std::chrono::high_resolution_clock::now()),
     framerate_(0.0f),
-    io_(io),
     pause_(true),
     load_addr_(0x0200),
     start_addr_(0x0200),
@@ -58,6 +59,35 @@ void ControlPanel::render() {
       reload_ = true;
       pause_ = true;
     }
+  }
+
+  ImGui::Spacing();
+  ImGui::Separator();
+  ImGui::Spacing();
+
+  ImGui::Text("DIAGNOSTICS"); 
+  ImGui::Text("Program Counter:   0x%04hX", emulator_.program_counter()); // Program Counter
+  ImGui::Text("Address Register:  0x%04hX", emulator_.I_register());      // Address Register
+  ImGui::Text("Stack Pointer:     0x%04hX", emulator_.stack_pointer());   // Stack Pointer 
+  ImGui::Text("Delay Timer:       0x%02hhX", emulator_.delay_timer());    // Stack Pointer 
+  ImGui::Text("Sound Timer:       0x%02hhX", emulator_.sound_timer());    // Stack Pointer 
+
+  // Data Registers
+  for (uint8_t i = 0; i < 0x10; i++) {
+    ImGui::Text("V%hhX:0x%02hhX", i, emulator_.data_register(i)); 
+    if (i % 4 != 3) {
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+    }
+  }
+
+  // Memory from PC
+  ImGui::Text("Memory");
+  for (uint16_t i = 0; i <= 0x8; i++) {
+    uint16_t addr = emulator_.program_counter() + i;
+    ImGui::Text("%02hhX ", emulator_.read_memory(addr));
+    ImGui::SameLine();
   }
 
   ImGui::End();

@@ -92,22 +92,21 @@ int main() {
   }
 
   SDL_GL_MakeCurrent(window, gl_context);
-  bool vsync = false;
-  SDL_GL_SetSwapInterval(vsync); // Enable vsync
+  // bool vsync = false;
+  // SDL_GL_SetSwapInterval(vsync); // Enable vsync
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO(); (void)io;
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable Docking
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable Multi-Viewport / Platform Windows
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+  // When viewports are enabled we tweak WindowRounding/WindowBg so platform 
+  // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     style.WindowRounding = 0.0f;
@@ -119,23 +118,18 @@ int main() {
   ImGui_ImplOpenGL3_Init(glsl_version);
 
   auto emulator = rem8Cpp();
-  auto control_panel = ControlPanel(io);
+  auto control_panel = ControlPanel(emulator, io);
 
   size_t screen_width = emulator.width();
   size_t screen_height = emulator.height();
   GLuint screen_texture;
-  std::vector<unsigned char> frame_buffer(screen_width * screen_height * 3);
+  std::vector<unsigned char> screen_buffer(screen_width * screen_height * 3);
   initialize_screen_texture(screen_texture, screen_width, screen_height);
 
   // Main loop
   bool done = false;
   uint32_t last_time = 0;
   while (!done) {
-    // Poll and handle events (inputs, window resize, etc.)
-    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-    // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);
@@ -165,8 +159,8 @@ int main() {
     }
 
     // Screen updating
-    emulator.get_screen_rgb(frame_buffer);
-    update_screen_texture(screen_texture, screen_width, screen_height, frame_buffer);
+    emulator.get_screen_rgb(screen_buffer);
+    update_screen_texture(screen_texture, screen_width, screen_height, screen_buffer);
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -196,9 +190,6 @@ int main() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    // Update and Render additional Platform Windows
-    // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-    //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
       SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
       SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();

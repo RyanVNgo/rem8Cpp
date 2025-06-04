@@ -11,6 +11,7 @@
 
 class rem8Cpp {
   public:
+    // Operational methods
     rem8Cpp();
 
     void cycle();
@@ -25,11 +26,20 @@ class rem8Cpp {
     void set_key(uint8_t key);
     void unset_key(uint8_t key);
 
+    // Diagnositc methods
     std::size_t width() const;
     std::size_t height() const;
 
-    uint16_t current_program_counter() const;
+    uint16_t program_counter() const;
     uint8_t read_memory(uint16_t addr) const;
+
+    uint8_t data_register(uint8_t reg) const;
+    uint16_t I_register() const;
+    uint16_t stack_pointer() const;
+    uint8_t key(uint8_t key) const;
+    bool key_pressed() const;
+    uint8_t sound_timer() const;
+    uint8_t delay_timer() const;
 
   private:
     std::size_t width_;
@@ -47,7 +57,7 @@ class rem8Cpp {
     uint8_t sound_timer_;
     uint8_t delay_timer_;
 
-    std::vector<std::uint8_t> memory_;
+    std::vector<uint8_t> memory_;
 
     void _stack_push_pc();
     void _stack_pull_pc();
