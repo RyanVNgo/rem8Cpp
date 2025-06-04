@@ -17,11 +17,19 @@ class rem8Cpp {
     const std::vector<uint8_t>& get_screen() const;
     std::vector<unsigned char> get_screen_rgb() const;
 
+    void set_program_counter(uint16_t addr);
+    void load_rom(uint16_t addr, std::vector<char> data, size_t size);
+
+    void update_timers();
+
     void set_key(uint8_t key);
     void unset_key(uint8_t key);
 
     std::size_t width() const;
     std::size_t height() const;
+
+    uint16_t current_program_counter() const;
+    uint8_t read_memory(uint16_t addr) const;
 
   private:
     std::size_t width_;

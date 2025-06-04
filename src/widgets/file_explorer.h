@@ -12,10 +12,10 @@ class FileExplorer {
   public:
     FileExplorer();
     
-    void show(std::filesystem::path init_path);
+    void open(std::filesystem::path init_path);
+    std::filesystem::path get_selected_path();
+    bool is_shown();
     void render();
-
-    const std::filesystem::path& get_selected_path() const;
 
   private:
     bool shown_;

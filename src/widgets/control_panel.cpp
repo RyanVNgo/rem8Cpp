@@ -10,7 +10,11 @@
 
 ControlPanel::ControlPanel(ImGuiIO& io) 
   : file_explorer_(FileExplorer()),
-    io_(io)
+    io_(io),
+    pause_(true),
+    load_addr_(0x0200),
+    start_addr_(0x0200),
+    reload_(false)
 { }
 
 void ControlPanel::render() {
@@ -23,13 +27,53 @@ void ControlPanel::render() {
   ImGui::Separator();
   ImGui::Spacing();
 
-  ImGui::Text("ROM: %s\n", file_explorer_.get_selected_path().c_str());
-  if (ImGui::Button("Load ROM")) {
-    file_explorer_.show(std::getenv("HOME"));
+  if (ImGui::Button(pause_ ? "Paused" : "Resume")) {
+    pause_ = !pause_;
   }
 
-  file_explorer_.render();
+  ImGui::Text("ROM: %s\n", selected_rom_.c_str());
+  if (ImGui::Button("Open ROM")) {
+    file_explorer_.open(std::getenv("HOME"));
+  }
+
+  ImGui::DragScalar("Load Addr", ImGuiDataType_U16, &load_addr_, 1.0f, NULL, NULL, "0x%04X");
+  ImGui::DragScalar("Start Addr", ImGuiDataType_U16, &start_addr_, 1.0f, NULL, NULL, "0x%04X");
+
+  if (file_explorer_.is_shown()) {
+    file_explorer_.render();
+    if (!file_explorer_.is_shown()) {
+      selected_rom_ = file_explorer_.get_selected_path();
+      reload_ = true;
+      pause_ = true;
+    }
+  }
+
+  //ImGui::ShowDemoWindow();
+
   ImGui::End();
 }
 
+bool ControlPanel::pause() const {
+  return pause_;
+}
+
+uint16_t ControlPanel::load_addr() const {
+  return load_addr_;
+}
+
+uint16_t ControlPanel::start_addr() const {
+  return start_addr_;
+}
+
+bool ControlPanel::reload() const {
+  return reload_;
+}
+
+std::filesystem::path ControlPanel::get_selected_rom() const {
+  return selected_rom_;
+}
+
+void ControlPanel::unset_reload() {
+  reload_ = false;
+}
 

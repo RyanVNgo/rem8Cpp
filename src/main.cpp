@@ -17,6 +17,7 @@
 
 #include "emulator.h"
 #include "widgets/control_panel.h"
+#include "utilities/file.h"
 #include "utilities/instrumentor.h"
 
 void initialize_screen_texture(GLuint& texture, size_t width, size_t height);
@@ -91,7 +92,7 @@ int main() {
   }
 
   SDL_GL_MakeCurrent(window, gl_context);
-  bool vsync = true;
+  bool vsync = false;
   SDL_GL_SetSwapInterval(vsync); // Enable vsync
 
   // Setup Dear ImGui context
@@ -128,6 +129,7 @@ int main() {
 
   // Main loop
   bool done = false;
+  uint32_t last_time = 0;
   while (!done) {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -149,8 +151,20 @@ int main() {
       continue;
     }
 
-    // Emulator cycling and screen updating
-    emulator.cycle();
+    // Emulator cycling
+    uint32_t curr_time = SDL_GetTicks();
+    if (!control_panel.pause()) {
+      uint32_t elapsed_time = curr_time - last_time;
+      if (elapsed_time >= 16) {
+        emulator.update_timers();
+        last_time = curr_time;
+      }
+      emulator.cycle();
+    } else {
+      last_time = curr_time;
+    }
+
+    // Screen updating
     std::vector<unsigned char> frame_buffer = emulator.get_screen_rgb();
     update_screen_texture(screen_texture, screen_width, screen_height, frame_buffer);
 
@@ -161,6 +175,18 @@ int main() {
 
     // App ImGui Componenets
     control_panel.render();
+    if (control_panel.reload()) {
+      auto rom_path = control_panel.get_selected_rom();
+      auto rom_data = open_file(rom_path);
+
+      auto start_addr = control_panel.start_addr();
+      auto load_addr = control_panel.load_addr();
+
+      emulator.set_program_counter(start_addr);
+      emulator.load_rom(load_addr, rom_data, rom_data.size());
+
+      control_panel.unset_reload();
+    }
 
     // Rendering
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);

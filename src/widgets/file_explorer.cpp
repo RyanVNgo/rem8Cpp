@@ -16,13 +16,16 @@ FileExplorer::FileExplorer()
   : shown_(false)
 { }
 
-void FileExplorer::show(std::filesystem::path init_path) {
+void FileExplorer::open(std::filesystem::path init_path) {
   temp_dir_ = init_path;
   shown_ = true;
 }
-
-const std::filesystem::path& FileExplorer::get_selected_path() const {
+std::filesystem::path FileExplorer::get_selected_path() {
   return selected_path_;
+}
+
+bool FileExplorer::is_shown() {
+  return shown_;
 }
 
 void FileExplorer::render() {
@@ -53,6 +56,7 @@ void FileExplorer::render() {
       dir_paths.push_back(path);
   }
   std::sort(dir_paths.begin(), dir_paths.end());
+  std::sort(file_paths.begin(), file_paths.end());
 
   if (ImGui::BeginTable("Files", 1, ImGuiTableFlags_RowBg)) {
     for (const auto& path : dir_paths) {

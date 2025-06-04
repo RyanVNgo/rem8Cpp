@@ -66,7 +66,7 @@ void rem8Cpp::_sprite_set(uint16_t loc) {
 void rem8Cpp::cycle() {
   uint8_t msb = memory_[program_counter_++];
   uint8_t lsb = memory_[program_counter_++];
-
+  
   switch (msb & 0xF0) {
     case 0x00:
       switch (msb << 8 | lsb) {
@@ -173,11 +173,26 @@ std::vector<unsigned char> rem8Cpp::get_screen_rgb() const {
   return screen_rgb;
 }
 
+void rem8Cpp::set_program_counter(uint16_t addr) {
+  if (addr >= REM8CPP_MAX_ADDR) return;
+  program_counter_ = addr;
+}
+
+void rem8Cpp::load_rom(uint16_t addr, std::vector<char> data, size_t size) {
+  if (addr + size >= REM8CPP_MAX_ADDR) return;
+  memcpy(&memory_[addr], data.data(), size);
+}
+
+void rem8Cpp::update_timers() {
+  if (delay_timer_ > 0) delay_timer_--;
+  if (sound_timer_ > 0) sound_timer_--;
+}
+
 void rem8Cpp::set_key(uint8_t key) {
   for (int i = 0; i < 16; i++) {
     if (key_binds_[i] == key) {
       key_[i] = KEY_ON;
-      key_pressed_ = KEY_ON;
+      key_pressed_ = true;
       break;
     }
   }
@@ -187,7 +202,7 @@ void rem8Cpp::unset_key(uint8_t key) {
   for (int i = 0; i < 16; i++) {
     if (key_binds_[i] == key) {
       key_[i] = KEY_OFF;
-      key_pressed_ = KEY_OFF;
+      key_pressed_ = false;
       break;
     }
   }
@@ -199,6 +214,14 @@ std::size_t rem8Cpp::width() const {
 
 std::size_t rem8Cpp::height() const {
   return height_;
+}
+
+uint16_t rem8Cpp::current_program_counter() const {
+  return program_counter_;
+}
+
+uint8_t rem8Cpp::read_memory(uint16_t addr) const {
+  return memory_[addr];
 }
 
 void rem8Cpp::_stack_push_pc() {
@@ -231,9 +254,9 @@ char rem8Cpp::_sprite_draw(uint8_t X, uint8_t Y, char height) {
     if (Y_pos + y >= height_) break;
     for (int x = 0; x < 8; x++) {
       if (X_pos + x >= width_) continue;
-      uint8_t init_val = screen_[width_ * (X_pos + x) + Y_pos + y];
-      screen_[width_ * (X_pos + x) + Y_pos + y] ^= (sprite_row >> (7 - x)) & 0x01;
-      if (screen_[width_ * (X_pos + x) + Y_pos + y] == 0 && init_val != 0) unset = 1;
+      uint8_t init_val = screen_[X_pos + x + (Y_pos + y) * width_];
+      screen_[X_pos + x + (Y_pos + y) * width_] ^= (sprite_row >> (7 - x)) & 0x01;
+      if (screen_[X_pos + x + (Y_pos + y) * width_] == 0 && init_val != 0) unset = 1;
     }
   }
 
@@ -255,7 +278,7 @@ void rem8Cpp::_instr_0NNN() {
 
 /* Clear the screen */
 void rem8Cpp::_instr_00E0() {
-  memset(memory_.data(), 0x00, memory_.size() * sizeof(uint8_t));
+  memset(screen_.data(), 0x00, screen_.size() * sizeof(uint8_t));
   return;
 }
 
@@ -441,9 +464,10 @@ void rem8Cpp::_instr_FX0A(uint8_t msb) {
   for (int i = 0; i < 16; i++) {
     if (key_[i] == KEY_OFF && key_pressed_) {
       data_registers_[X] = i;
-      break;
+      return;
     }
   }
+  program_counter_ -= 2;
 }
 
 /* Set delay timer to value of VX */
