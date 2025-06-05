@@ -26,6 +26,8 @@
 #define KEY_OFF               0x0
 
 
+// Public Interface - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+
 // Operational methods
 
 rem8Cpp::rem8Cpp() 
@@ -317,71 +319,74 @@ uint8_t _lsb_reg_idx(uint8_t lsb) {
   return (lsb >> 4) & 0x0F;
 }
 
-/* Execute machine language subroutine at address NNN */
+
+// Instructions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+
+// Execute machine language subroutine at address NNN
 void rem8Cpp::_instr_0NNN() {
   return;
 }
 
-/* Clear the screen */
+// Clear the screen
 void rem8Cpp::_instr_00E0() {
   memset(screen_.data(), 0x00, screen_.size() * sizeof(uint8_t));
   return;
 }
 
-/* Return from a subroutine */
+// Return from a subroutine
 void rem8Cpp::_instr_00EE() {
   _stack_pull_pc();
 }
 
-/* Jump to address NNN */
+// Jump to address NNN
 void rem8Cpp::_instr_1NNN(uint8_t msb, uint8_t lsb) {
   program_counter_ = ((msb & 0x0F) << 8) | lsb;
 }
 
-/* Execute subroutine starting at address NNN */
+// Execute subroutine starting at address NNN
 void rem8Cpp::_instr_2NNN(uint8_t msb, uint8_t lsb) {
   _stack_push_pc();
   program_counter_ = ((msb & 0x0F) << 8) | lsb;
 }
 
-/* Skip following instruction if VX == NN */
+// Skip following instruction if VX == NN
 void rem8Cpp::_instr_3XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   if (data_registers_[X] == lsb) program_counter_ += INSTR_SIZE;
 }
 
-/* Skip following instruction if VX != NN */
+// Skip following instruction if VX != NN
 void rem8Cpp::_instr_4XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   if (data_registers_[X] != lsb) program_counter_ += INSTR_SIZE;
 }
 
-/* Skip following instruction if VX == VY*/
+// Skip following instruction if VX == VY
 void rem8Cpp::_instr_5XY0(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
   if (data_registers_[X] == data_registers_[Y]) program_counter_ += INSTR_SIZE;
 }
 
-/* Store value NN in VX */
+// Store value NN in VX
 void rem8Cpp::_instr_6XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   data_registers_[X] = lsb;
 }
 
-/* Add value NN to VX */
+// Add value NN to VX
 void rem8Cpp::_instr_7XNN(uint8_t msb, uint8_t lsb) {
   data_registers_[msb & 0x0F] += lsb;
 }
 
-/* Store the value of VY in VX */
+// Store the value of VY in VX
 void rem8Cpp::_instr_8XY0(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
   data_registers_[X] = data_registers_[Y];
 }
 
-/* Set VX to VX | VY , reset 0x0F register */
+// Set VX to VX | VY , reset 0x0F register
 void rem8Cpp::_instr_8XY1(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -389,7 +394,7 @@ void rem8Cpp::_instr_8XY1(uint8_t msb, uint8_t lsb) {
   data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VX & VY , reset 0x0F register */
+// Set VX to VX & VY , reset 0x0F register
 void rem8Cpp::_instr_8XY2(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -397,7 +402,7 @@ void rem8Cpp::_instr_8XY2(uint8_t msb, uint8_t lsb) {
   data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VX ^ VY , reset 0x0F register */
+// Set VX to VX ^ VY , reset 0x0F register
 void rem8Cpp::_instr_8XY3(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -405,7 +410,7 @@ void rem8Cpp::_instr_8XY3(uint8_t msb, uint8_t lsb) {
   data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VX + VY , if overflow VF = 0x01 */
+// Set VX to VX + VY , if overflow VF = 0x01
 void rem8Cpp::_instr_8XY4(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -415,7 +420,7 @@ void rem8Cpp::_instr_8XY4(uint8_t msb, uint8_t lsb) {
   else data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VX - VY , if borrow VF = 0x00 */
+// Set VX to VX - VY , if borrow VF = 0x00
 void rem8Cpp::_instr_8XY5(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -425,7 +430,7 @@ void rem8Cpp::_instr_8XY5(uint8_t msb, uint8_t lsb) {
   else data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VY >> 1 , set VF to VY & 0x01 */
+// Set VX to VY >> 1 , set VF to VY LSb
 void rem8Cpp::_instr_8XY6(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -444,7 +449,7 @@ void rem8Cpp::_instr_8XY7(uint8_t msb, uint8_t lsb) {
   else data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VY << 1 , set VF to VY & 0x01 */
+/* Set VX to VY << 1 , set VF to VY MSb */
 void rem8Cpp::_instr_8XYE(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -559,7 +564,7 @@ void rem8Cpp::_instr_FX55(uint8_t msb) {
   I_register_ += X + 1;
 }
 
-/* File V0 to VX from memory starting at addr register */
+/* Fill V0 to VX from memory starting at addr register */
 void rem8Cpp::_instr_FX65(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
   for (int i = 0; i <= X; i++) {
