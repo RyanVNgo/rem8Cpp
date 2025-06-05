@@ -19,6 +19,8 @@ cmake --build build
 ## Usage
 After building the project, you can start using the emulator by running the `rem8C++` executable in the `build/` directory.
 
+![IBM Test](images/IBM_test.png)
+
 ### Loading a ROM
 To load a ROM:
 - click on the **Open ROM** button in the control panel to open the file explorer
