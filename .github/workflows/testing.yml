@@ -1,33 +1,11 @@
-name: rem8C++ Build and Testing
+name: rem8C++ Testing
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-jobs:
-  build:
-    name: Build Emulator
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          ./vcpkg/bootstrap-vcpkg.sh
-          ./vcpkg/vcpkg install sdl2 imgui
-
-      - name: Setup CMake
-        run: |
-          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
-
-      - name: Build rem8C++
-        run: |
-          cmake --build build
-          
+jobs:          
   test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
