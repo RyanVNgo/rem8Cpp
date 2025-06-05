@@ -79,7 +79,7 @@ int main() {
 
   constexpr size_t width = 640;
   constexpr size_t height = 320;
-  SDL_Window* window = SDL_CreateWindow("SAAS", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
+  SDL_Window* window = SDL_CreateWindow("rem8C++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
   if (window == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
     return -1;
