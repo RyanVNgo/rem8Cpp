@@ -26,6 +26,8 @@
 #define KEY_OFF               0x0
 
 
+// Public Interface - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+
 // Operational methods
 
 rem8Cpp::rem8Cpp() 
@@ -317,6 +319,9 @@ uint8_t _lsb_reg_idx(uint8_t lsb) {
   return (lsb >> 4) & 0x0F;
 }
 
+
+// Instructions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
+
 /* Execute machine language subroutine at address NNN */
 void rem8Cpp::_instr_0NNN() {
   return;
@@ -425,7 +430,7 @@ void rem8Cpp::_instr_8XY5(uint8_t msb, uint8_t lsb) {
   else data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VY >> 1 , set VF to VY & 0x01 */
+/* Set VX to VY >> 1 , set VF to VY LSb */
 void rem8Cpp::_instr_8XY6(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -444,7 +449,7 @@ void rem8Cpp::_instr_8XY7(uint8_t msb, uint8_t lsb) {
   else data_registers_[0x0F] = 0x00;
 }
 
-/* Set VX to VY << 1 , set VF to VY & 0x01 */
+/* Set VX to VY << 1 , set VF to VY MSb */
 void rem8Cpp::_instr_8XYE(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
@@ -559,7 +564,7 @@ void rem8Cpp::_instr_FX55(uint8_t msb) {
   I_register_ += X + 1;
 }
 
-/* File V0 to VX from memory starting at addr register */
+/* Fill V0 to VX from memory starting at addr register */
 void rem8Cpp::_instr_FX65(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
   for (int i = 0; i <= X; i++) {
