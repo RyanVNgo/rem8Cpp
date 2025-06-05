@@ -1,0 +1,44 @@
+name: rem8C++ Build and Testing
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build Emulator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        run: |
+          cmake -S . -B build
+
+      - name: Build rem8C++
+        run: |
+          cmake --build build
+          
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        run: |
+          cmake -S tests/ -B tests/build/
+
+      - name: Build Test Suite
+        run: |
+          cmake --build tests/build/
+
+      - name: Run Tests
+        run: |
+          ctest --test-dir tests/build/
+      
