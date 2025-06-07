@@ -29,19 +29,19 @@ To load a ROM:
 If desired, you can change the load address and start address when loading a ROM *(because of some current implementation quirks,
 it is recommended to leave these at their default values)*.
 
+You can also change the clock rate of the emulator between 0hz - 20000hz with the **Clock Rate** drag slider.
+
+
 ### Diagnostics in the Control Panel
-- `mpf`: milliseconds per frame*
 - `fps`: frames per second*
 - `Program Counter`: Current location of the program counter
 - `Address Register`: Current value stored in the addres register (I Register)
 - `Stack Pointer`: Current location of the stack pointer
 - `Delay Timer`: Current value of the delay timer
-- `Sound Timer`: Current value of the sound timer**
+- `Sound Timer`: Current value of the sound timer*
 - `V0 - VF`: The values stored in each of the 16 data registers
 - `Memory`: Displays the 8 bytes of data at and following the current instruction (PC to PC + 8)
 
 <sub>
- * - One emulator cycle occurs per frame and in the current implementation, there is no limit to the frame rate
-
- ** - There is no sound
+ * - There is no sound
 </sub>

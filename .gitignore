@@ -9,3 +9,5 @@ tests/Testing/
 *.ini
 !DefaultPanelLayout.ini
 
+*.json
+

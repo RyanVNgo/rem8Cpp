@@ -92,28 +92,22 @@ int main() {
   }
 
   SDL_GL_MakeCurrent(window, gl_context);
-  // bool vsync = false;
-  // SDL_GL_SetSwapInterval(vsync); // Enable vsync
+  SDL_GL_SetSwapInterval(1); 
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO(); (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-  // Setup Dear ImGui style
   ImGui::StyleColorsDark();
-
-  // When viewports are enabled we tweak WindowRounding/WindowBg so platform 
-  // windows can look identical to regular ones.
   ImGuiStyle& style = ImGui::GetStyle();
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     style.WindowRounding = 0.0f;
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
 
-  // Setup Platform/Renderer backends
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -129,6 +123,7 @@ int main() {
   // Main loop
   bool done = false;
   uint32_t last_time = 0;
+  uint32_t delay_accumulator = 0;
   while (!done) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -146,23 +141,41 @@ int main() {
     }
 
     // Emulator cycling
+    { PROFILE_SCOPE("Emulator Cycling");
     uint32_t curr_time = SDL_GetTicks();
     if (!control_panel.pause()) {
       uint32_t elapsed_time = curr_time - last_time;
-      if (elapsed_time >= 16) {
+
+      delay_accumulator += elapsed_time;
+      if (delay_accumulator >= 16) {
         emulator.update_timers();
-        last_time = curr_time;
+        delay_accumulator = 0;
       }
-      emulator.cycle();
+
+      uint32_t cycle_count = elapsed_time / (1000.0f / control_panel.clock_rate());
+      for (uint32_t i = 0; i < cycle_count; i++) {
+        emulator.cycle();
+      }
+
+      last_time = curr_time;
     } else {
       last_time = curr_time;
     }
+    } // End Profiling Scope
 
-    // Screen updating
+    { PROFILE_SCOPE("Update Screen");
     emulator.get_screen_rgb(screen_buffer);
     update_screen_texture(screen_texture, screen_width, screen_height, screen_buffer);
+    } // End Profiling Scope
 
-    // Start the Dear ImGui frame
+    { PROFILE_SCOPE("Render Screen");
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    draw_screen_texture(screen_texture);
+    } // End Profiling Scope
+
+    { PROFILE_SCOPE("Render ImGui");
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -182,14 +195,11 @@ int main() {
       control_panel.unset_reload();
     }
 
-    // Rendering
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    draw_screen_texture(screen_texture);
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    } // End Profiling Scope
 
+    { PROFILE_SCOPE("Window Swapping");
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
       SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
       SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
@@ -197,8 +207,8 @@ int main() {
       ImGui::RenderPlatformWindowsDefault();
       SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
     }
-
     SDL_GL_SwapWindow(window);
+    } // End Profiling Scope
   }
 
   // Cleanup
@@ -235,18 +245,20 @@ void initialize_screen_texture(GLuint& texture, size_t width, size_t height) {
 }
 
 void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data) {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexSubImage2D(
-        GL_TEXTURE_2D,
-        0, 0, 0,
-        width, height,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        data.data()
-    );
+  PROFILE_FUNCTION();
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexSubImage2D(
+      GL_TEXTURE_2D,
+      0, 0, 0,
+      width, height,
+      GL_RGB,
+      GL_UNSIGNED_BYTE,
+      data.data()
+  );
 }
 
 void draw_screen_texture(GLuint texture) {
+  PROFILE_FUNCTION();
   glBindTexture(GL_TEXTURE_2D, texture);
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);

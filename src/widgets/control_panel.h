@@ -22,6 +22,7 @@ class ControlPanel{
     bool pause() const;
     uint16_t load_addr() const;
     uint16_t start_addr() const;
+    int clock_rate() const;
     bool reload() const;
     std::filesystem::path get_selected_rom() const;
     void unset_reload();
@@ -37,6 +38,7 @@ class ControlPanel{
     std::filesystem::path selected_rom_;
     uint16_t load_addr_;
     uint16_t start_addr_;
+    int clock_rate_;
 
     bool reload_;
 
