@@ -20,6 +20,7 @@ ControlPanel::ControlPanel(rem8Cpp& emulator, ImGuiIO& io)
     pause_(true),
     load_addr_(0x0200),
     start_addr_(0x0200),
+    clock_rate_(1000),
     reload_(false)
 { }
 
@@ -33,7 +34,6 @@ void ControlPanel::render() {
     time_last_ = time_curr_;
   }
 
-  ImGui::Text("mpf: %.3f", 1000.0f / framerate_);
   ImGui::Text("fps: %.3f", framerate_); 
 
   ImGui::Spacing();
@@ -51,6 +51,7 @@ void ControlPanel::render() {
 
   ImGui::DragScalar("Load Addr", ImGuiDataType_U16, &load_addr_, 1.0f, NULL, NULL, "0x%04X");
   ImGui::DragScalar("Start Addr", ImGuiDataType_U16, &start_addr_, 1.0f, NULL, NULL, "0x%04X");
+  ImGui::DragInt("Clock Rate", &clock_rate_, 1.0f, 0, 20000, "%d HZ");
 
   if (file_explorer_.is_shown()) {
     file_explorer_.render();
@@ -103,6 +104,10 @@ uint16_t ControlPanel::load_addr() const {
 
 uint16_t ControlPanel::start_addr() const {
   return start_addr_;
+}
+
+int ControlPanel::clock_rate() const {
+  return clock_rate_;
 }
 
 bool ControlPanel::reload() const {
