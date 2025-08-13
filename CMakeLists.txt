@@ -6,8 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD              20)
 set(CMAKE_CXX_COMPILER             g++)
-set(CMAKE_CXX_STANDARD_REQUIRED   true)
-set(CMAKE_CXX_EXTENSIONS           off)
+set(CMAKE_CXX_STANDARD_REQUIRED     ON)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 add_executable(${PROJECT_NAME})
@@ -17,7 +16,6 @@ include_directories(
 
   ${CMAKE_SOURCE_DIR}/src/imgui
   ${CMAKE_SOURCE_DIR}/src/imgui/backend
-
 )
 
 file(GLOB IMGUI_SOURCES           "${CMAKE_SOURCE_DIR}/src/imgui/*.cpp")
@@ -29,6 +27,8 @@ target_sources(
 
   ${CMAKE_SOURCE_DIR}/src/main.cpp
   ${CMAKE_SOURCE_DIR}/src/emulator.cpp
+
+  ${CMAKE_SOURCE_DIR}/src/user_interface/window.cpp
 
   ${CMAKE_SOURCE_DIR}/src/widgets/control_panel.cpp
   ${CMAKE_SOURCE_DIR}/src/widgets/file_explorer.cpp

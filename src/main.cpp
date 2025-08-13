@@ -10,9 +10,9 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
-#include <iostream>
 
 #include "emulator.h"
+#include "user_interface/window.h"
 #include "widgets/control_panel.h"
 #include "utilities/file.h"
 #include "utilities/instrumentor.h"
@@ -23,26 +23,17 @@ void update_screen_texture(GLuint texture, size_t width, size_t height, std::vec
 void draw_screen_texture(GLuint texture);
 
 int main() {
-  const char* glsl_version = "#version 130";
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-  if (!glfwInit()) { 
-    std::cerr << "Failed to initialize GLFW" << std::endl;
-    return -1; 
-  }
-
-  constexpr size_t width = 640;
-  constexpr size_t height = 320;
-  GLFWwindow* window = glfwCreateWindow(width, height, "rem8C++", NULL, NULL);
-  if (!window) {
-    glfwTerminate();
-    std::cerr << "Failed to create window" << std::endl;
+  if (!initialize_glfw()) {
     return -1;
   }
 
-  glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);
+  ApplicationWindow app_window{"rem8C++", 640, 320};
+  if (!app_window.valid()) {
+    return -1;
+  }
+
+  app_window.make_current_context();
+  app_window.set_vsync(true);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -58,8 +49,8 @@ int main() {
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
 
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init(glsl_version);
+  ImGui_ImplGlfw_InitForOpenGL(app_window.window(), true);
+  ImGui_ImplOpenGL3_Init("#version 130");
 
   auto emulator = rem8Cpp();
   auto control_panel = ControlPanel(emulator, io);
@@ -73,24 +64,24 @@ int main() {
   // Main loop
   double last_time = 0;
   uint32_t delay_accumulator = 0;
-  while (!glfwWindowShouldClose(window)) {
+  while (!app_window.should_close()) {
     glfwPollEvents();
-    glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS ? emulator.set_key('1') : emulator.unset_key('1'); 
-    glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS ? emulator.set_key('2') : emulator.unset_key('2');
-    glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS ? emulator.set_key('3') : emulator.unset_key('3');
-    glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS ? emulator.set_key('4') : emulator.unset_key('4');
-    glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ? emulator.set_key('q') : emulator.unset_key('q');
-    glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ? emulator.set_key('w') : emulator.unset_key('w');
-    glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? emulator.set_key('e') : emulator.unset_key('e');
-    glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS ? emulator.set_key('r') : emulator.unset_key('r');
-    glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? emulator.set_key('a') : emulator.unset_key('a');
-    glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? emulator.set_key('s') : emulator.unset_key('s');
-    glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? emulator.set_key('d') : emulator.unset_key('d');
-    glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS ? emulator.set_key('f') : emulator.unset_key('f');
-    glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS ? emulator.set_key('z') : emulator.unset_key('z');
-    glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS ? emulator.set_key('x') : emulator.unset_key('x');
-    glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS ? emulator.set_key('c') : emulator.unset_key('c');
-    glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS ? emulator.set_key('v') : emulator.unset_key('v');
+    app_window.is_key_pressed(GLFW_KEY_1) ? emulator.set_key('1') : emulator.unset_key('1'); 
+    app_window.is_key_pressed(GLFW_KEY_2) ? emulator.set_key('2') : emulator.unset_key('2');
+    app_window.is_key_pressed(GLFW_KEY_3) ? emulator.set_key('3') : emulator.unset_key('3');
+    app_window.is_key_pressed(GLFW_KEY_4) ? emulator.set_key('4') : emulator.unset_key('4');
+    app_window.is_key_pressed(GLFW_KEY_Q) ? emulator.set_key('q') : emulator.unset_key('q');
+    app_window.is_key_pressed(GLFW_KEY_W) ? emulator.set_key('w') : emulator.unset_key('w');
+    app_window.is_key_pressed(GLFW_KEY_E) ? emulator.set_key('e') : emulator.unset_key('e');
+    app_window.is_key_pressed(GLFW_KEY_R) ? emulator.set_key('r') : emulator.unset_key('r');
+    app_window.is_key_pressed(GLFW_KEY_A) ? emulator.set_key('a') : emulator.unset_key('a');
+    app_window.is_key_pressed(GLFW_KEY_S) ? emulator.set_key('s') : emulator.unset_key('s');
+    app_window.is_key_pressed(GLFW_KEY_D) ? emulator.set_key('d') : emulator.unset_key('d');
+    app_window.is_key_pressed(GLFW_KEY_F) ? emulator.set_key('f') : emulator.unset_key('f');
+    app_window.is_key_pressed(GLFW_KEY_Z) ? emulator.set_key('z') : emulator.unset_key('z');
+    app_window.is_key_pressed(GLFW_KEY_X) ? emulator.set_key('x') : emulator.unset_key('x');
+    app_window.is_key_pressed(GLFW_KEY_C) ? emulator.set_key('c') : emulator.unset_key('c');
+    app_window.is_key_pressed(GLFW_KEY_V) ? emulator.set_key('v') : emulator.unset_key('v');
 
     // Emulator cycling
     double curr_time = glfwGetTime() * 1000;
@@ -150,7 +141,7 @@ int main() {
       glfwMakeContextCurrent(backup_current_context);
     }
 
-    glfwSwapBuffers(window);
+    app_window.swap_buffers();
   }
 
   // Cleanup
@@ -158,9 +149,7 @@ int main() {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  glfwDestroyWindow(window);
-  glfwTerminate();
-
+  terminate_glfw();
   return 0;
 }
 
