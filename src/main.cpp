@@ -1,98 +1,48 @@
 /*  @file   main.cpp
  *  @brief  Program entry point.
- *  @author DearImGui & Ryan V. Ngo
+ *  @author Ryan V. Ngo
  */
 
 #include "imgui.h"
-#include "imgui_impl_sdl2.h"
+#include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <SDL2/SDL.h>
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <SDL_opengles2.h>
-#else
-#include <SDL2/SDL_opengl.h>
-#endif
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include <vector>
+#include <iostream>
 
 #include "emulator.h"
 #include "widgets/control_panel.h"
 #include "utilities/file.h"
 #include "utilities/instrumentor.h"
 
+
 void initialize_screen_texture(GLuint& texture, size_t width, size_t height);
 void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data);
 void draw_screen_texture(GLuint texture);
 
 int main() {
-#if defined(PROFILING)
-  Instrumentor::Get().BeginSession("Main");
-#endif
-
-  // Setup SDL
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-      printf("Error: %s\n", SDL_GetError());
-      return -1;
-  }
-
-  // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-  // GL ES 2.0 + GLSL 100 (WebGL 1.0)
-  const char* glsl_version = "#version 100";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(IMGUI_IMPL_OPENGL_ES3)
-  // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
-  const char* glsl_version = "#version 300 es";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__)
-  // GL 3.2 Core + GLSL 150
-  const char* glsl_version = "#version 150";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#else
-  // GL 3.0 + GLSL 130
   const char* glsl_version = "#version 130";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-  // From 2.0.18: Enable native IME.
-#ifdef SDL_HINT_IME_SHOW_UI
-  SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-#endif
-
-  // Create window with graphics context
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-  SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+  if (!glfwInit()) { 
+    std::cerr << "Failed to initialize GLFW" << std::endl;
+    return -1; 
+  }
 
   constexpr size_t width = 640;
   constexpr size_t height = 320;
-  SDL_Window* window = SDL_CreateWindow("rem8C++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
-  if (window == nullptr) {
-    printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+  GLFWwindow* window = glfwCreateWindow(width, height, "rem8C++", NULL, NULL);
+  if (!window) {
+    glfwTerminate();
+    std::cerr << "Failed to create window" << std::endl;
     return -1;
   }
 
-  SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-  if (gl_context == nullptr) {
-    printf("Error: SDL_GL_CreateContext(): %s\n", SDL_GetError());
-    return -1;
-  }
-
-  SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1); 
+  glfwMakeContextCurrent(window);
+  glfwSwapInterval(1);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -108,7 +58,7 @@ int main() {
     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
   }
 
-  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
   auto emulator = rem8Cpp();
@@ -121,30 +71,31 @@ int main() {
   initialize_screen_texture(screen_texture, screen_width, screen_height);
 
   // Main loop
-  bool done = false;
-  uint32_t last_time = 0;
+  double last_time = 0;
   uint32_t delay_accumulator = 0;
-  while (!done) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL2_ProcessEvent(&event);
-      if (event.type == SDL_QUIT)
-          done = true;
-      if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-          done = true;
-      if (event.type == SDL_KEYDOWN) emulator.set_key(event.key.keysym.sym);
-      if (event.type == SDL_KEYUP) emulator.unset_key(event.key.keysym.sym);
-    }
-    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
-      SDL_Delay(10);
-      continue;
-    }
+  while (!glfwWindowShouldClose(window)) {
+    glfwPollEvents();
+    glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS ? emulator.set_key('1') : emulator.unset_key('1'); 
+    glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS ? emulator.set_key('2') : emulator.unset_key('2');
+    glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS ? emulator.set_key('3') : emulator.unset_key('3');
+    glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS ? emulator.set_key('4') : emulator.unset_key('4');
+    glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ? emulator.set_key('q') : emulator.unset_key('q');
+    glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ? emulator.set_key('w') : emulator.unset_key('w');
+    glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? emulator.set_key('e') : emulator.unset_key('e');
+    glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS ? emulator.set_key('r') : emulator.unset_key('r');
+    glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? emulator.set_key('a') : emulator.unset_key('a');
+    glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? emulator.set_key('s') : emulator.unset_key('s');
+    glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? emulator.set_key('d') : emulator.unset_key('d');
+    glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS ? emulator.set_key('f') : emulator.unset_key('f');
+    glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS ? emulator.set_key('z') : emulator.unset_key('z');
+    glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS ? emulator.set_key('x') : emulator.unset_key('x');
+    glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS ? emulator.set_key('c') : emulator.unset_key('c');
+    glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS ? emulator.set_key('v') : emulator.unset_key('v');
 
     // Emulator cycling
-    { PROFILE_SCOPE("Emulator Cycling");
-    uint32_t curr_time = SDL_GetTicks();
+    double curr_time = glfwGetTime() * 1000;
     if (!control_panel.pause()) {
-      uint32_t elapsed_time = curr_time - last_time;
+      double elapsed_time = curr_time - last_time;
 
       delay_accumulator += elapsed_time;
       if (delay_accumulator >= 16) {
@@ -161,23 +112,17 @@ int main() {
     } else {
       last_time = curr_time;
     }
-    } // End Profiling Scope
 
-    { PROFILE_SCOPE("Update Screen");
     emulator.get_screen_rgb(screen_buffer);
     update_screen_texture(screen_texture, screen_width, screen_height, screen_buffer);
-    } // End Profiling Scope
 
-    { PROFILE_SCOPE("Render Screen");
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     draw_screen_texture(screen_texture);
-    } // End Profiling Scope
 
-    { PROFILE_SCOPE("Render ImGui");
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     // App ImGui Componenets
@@ -197,32 +142,25 @@ int main() {
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    } // End Profiling Scope
 
-    { PROFILE_SCOPE("Window Swapping");
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-      SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
-      SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+      GLFWwindow* backup_current_context = glfwGetCurrentContext();
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
-      SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+      glfwMakeContextCurrent(backup_current_context);
     }
-    SDL_GL_SwapWindow(window);
-    } // End Profiling Scope
+
+    glfwSwapBuffers(window);
   }
 
   // Cleanup
   ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_GL_DeleteContext(gl_context);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
+  glfwDestroyWindow(window);
+  glfwTerminate();
 
-#if defined(PROFILING)
-  Instrumentor::Get().EndSession();
-#endif
   return 0;
 }
 

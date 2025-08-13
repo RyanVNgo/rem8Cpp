@@ -1,9 +1,6 @@
-cmake_minimum_required(VERSION 3.26)
-include(CheckLanguage)
+cmake_minimum_required(VERSION 3.20)
 
-project(rem8C++ VERSION 1.0.0 LANGUAGES CXX)
-
-add_executable(${PROJECT_NAME})
+project(rem8C++ VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -11,26 +8,51 @@ set(CMAKE_CXX_STANDARD              20)
 set(CMAKE_CXX_COMPILER             g++)
 set(CMAKE_CXX_STANDARD_REQUIRED   true)
 set(CMAKE_CXX_EXTENSIONS           off)
-set(CMAKE_CXX_FLAGS "-O0 -Wall -Wextra -D_REENTRANT")
-set(CMAKE_CXX_FLAGS_DEBUG_INIT "-O0 -Wall -Wextra -D_REENTRANT") # -DCMAKE_BUILD_TYPE=Debug
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O3 -Wall -Wextra -D_REENTRANT") # -DCMAKE_BUILD_TYPE=Release
+add_compile_options(-Wall -Wextra -Wpedantic)
 
-file(GLOB_RECURSE CPP_SOURCES     "src/*.cpp")
-set_source_files_properties(${CPP_SOURCES} PROPERTIES LANGUAGE CXX)
-target_sources(${PROJECT_NAME} PRIVATE ${CPP_SOURCES})
+add_executable(${PROJECT_NAME})
 
-include_directories(${CMAKE_SOURCE_DIR}/src/)
-include_directories(${CMAKE_SOURCE_DIR}/src/imgui)
-include_directories(${CMAKE_SOURCE_DIR}/src/imgui/backend)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/src/
 
-target_include_directories(${PROJECT_NAME} PRIVATE src/imgui src/imgui/backends)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 GL)
+  ${CMAKE_SOURCE_DIR}/src/imgui
+  ${CMAKE_SOURCE_DIR}/src/imgui/backend
 
-option(ENABLE_PROFILING "Enable profiling features" OFF)
-if (ENABLE_PROFILING)
-  message(STATUS "  Profiling Enabled")
-  add_compile_definitions(PROFILING)
-else()
-  message(STATUS "  Profiling Disabled")
-endif()
+)
+
+file(GLOB IMGUI_SOURCES           "${CMAKE_SOURCE_DIR}/src/imgui/*.cpp")
+file(GLOB IMGUI_BACKEND_SOURCES   "${CMAKE_SOURCE_DIR}/src/imgui/backend/*.cpp")
+
+target_sources(
+  ${PROJECT_NAME} 
+  PRIVATE 
+
+  ${CMAKE_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_SOURCE_DIR}/src/emulator.cpp
+
+  ${CMAKE_SOURCE_DIR}/src/widgets/control_panel.cpp
+  ${CMAKE_SOURCE_DIR}/src/widgets/file_explorer.cpp
+
+  ${CMAKE_SOURCE_DIR}/src/utilities/file.cpp
+
+  ${IMGUI_SOURCES}
+  ${IMGUI_BACKEND_SOURCES}
+)
+
+find_package(glfw3 CONFIG REQUIRED)
+find_package(GLEW REQUIRED)
+
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+  glfw
+  GLEW::GLEW
+)
+
+# option(ENABLE_PROFILING "Enable profiling features" OFF)
+# if (ENABLE_PROFILING)
+#   message(STATUS "  Profiling Enabled")
+#   add_compile_definitions(PROFILING)
+# else()
+#   message(STATUS "  Profiling Disabled")
+# endif()
 

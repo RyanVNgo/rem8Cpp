@@ -9,5 +9,7 @@ tests/Testing/
 *.ini
 !DefaultPanelLayout.ini
 
-*.json
+CMakeUserPresets.json
+
+# *.json
 
