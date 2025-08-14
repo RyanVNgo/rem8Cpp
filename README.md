@@ -2,15 +2,41 @@
 
 An enhanced C++ version of [rem8C](https://github.com/RyanVNgo/rem8C).
 
-## Downloading and Building
+## Project Dependencies
 > [!IMPORTANT]
-> This project relies on several dependencies, namely `cmake`, `SDL2`, and `OpenGL`
+> This project requires `vcpkg` for package installation and `cmake` for building.
 
-To download and build the project:
+
+## Downloading and Building
+### Download the project
 ```sh
 git clone https://github.com/RyanVNgo/rem8Cpp.git
 cd rem8Cpp
-cmake -S . -B build
+```
+
+### Set up `CMakeUserPresets.json`
+In the project home directory, create a file called `CMakeUserPresets.json` and copy the following into the file.
+
+```sh
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "default",
+      "inherits": "vcpkg",
+      "environment": {
+        "VCPKG_ROOT": "{PATH_TO_VCPKG_DIRECTORY}"
+      }
+    }
+  ]
+}
+```
+
+Replace `{PATH_TO_VCPKG_DIRECTORY}` with the path to your downloaded and setup vcpkg directory — for example `/home/user/tools/vcpkg/`.
+
+### Downlaod packages and build project
+```sh
+cmake --preset=default
 cmake --build build
 ```
 
