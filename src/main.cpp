@@ -1,5 +1,4 @@
 /*  @file   main.cpp
- *  @brief  Program entry point.
  *  @author Ryan V. Ngo
  */
 
@@ -13,6 +12,7 @@
 
 #include "emulator.h"
 #include "user_interface/window.h"
+#include "widgets/widgets.h"
 #include "widgets/control_panel.h"
 #include "utilities/file.h"
 #include "utilities/instrumentor.h"
@@ -35,22 +35,8 @@ int main() {
   app_window.make_current_context();
   app_window.set_vsync(true);
 
-  // Setup Dear ImGui context
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-  ImGui::StyleColorsDark();
-  ImGuiStyle& style = ImGui::GetStyle();
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-  }
-
-  ImGui_ImplGlfw_InitForOpenGL(app_window.window(), true);
-  ImGui_ImplOpenGL3_Init("#version 130");
+  WidgetRunner widget_runner{app_window.window()};
+  ImGuiIO& io = ImGui::GetIO();
 
   auto emulator = rem8Cpp();
   auto control_panel = ControlPanel(emulator, io);
@@ -143,11 +129,6 @@ int main() {
 
     app_window.swap_buffers();
   }
-
-  // Cleanup
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
 
   terminate_glfw();
   return 0;

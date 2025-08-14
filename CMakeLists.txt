@@ -30,6 +30,7 @@ target_sources(
 
   ${CMAKE_SOURCE_DIR}/src/user_interface/window.cpp
 
+  ${CMAKE_SOURCE_DIR}/src/widgets/widgets.cpp
   ${CMAKE_SOURCE_DIR}/src/widgets/control_panel.cpp
   ${CMAKE_SOURCE_DIR}/src/widgets/file_explorer.cpp
 

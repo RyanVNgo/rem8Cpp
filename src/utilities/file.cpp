@@ -20,6 +20,8 @@ std::vector<char> open_file(std::filesystem::path file_path) {
 
     file_bytes.resize(file_size);
     file.read(file_bytes.data(), file_size);
+
+    file.close();
   }
 
   return file_bytes;
