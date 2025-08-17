@@ -41,6 +41,8 @@ int main() {
   auto emulator = rem8Cpp();
   auto control_panel = ControlPanel(emulator, io);
 
+  widget_runner.add_widget(&control_panel);
+
   size_t screen_width = emulator.width();
   size_t screen_height = emulator.height();
   GLuint screen_texture;
@@ -98,12 +100,8 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
     draw_screen_texture(screen_texture);
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    widget_runner.render();
 
-    // App ImGui Componenets
-    control_panel.render();
     if (control_panel.reload()) {
       auto rom_path = control_panel.get_selected_rom();
       auto rom_data = open_file(rom_path);
@@ -115,16 +113,6 @@ int main() {
       emulator.load_rom(load_addr, rom_data, rom_data.size());
 
       control_panel.unset_reload();
-    }
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-      GLFWwindow* backup_current_context = glfwGetCurrentContext();
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-      glfwMakeContextCurrent(backup_current_context);
     }
 
     app_window.swap_buffers();

@@ -19,6 +19,7 @@ class WidgetRunner {
     WidgetRunner(GLFWwindow* window);
     ~WidgetRunner();
 
+    void add_widget(IWidget* widget);
     void render();
 
     WidgetRunner(const WidgetRunner& other) = delete;

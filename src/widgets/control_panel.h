@@ -10,15 +10,16 @@
 
 #include "imgui.h"
 
+#include "widgets.h"
 #include "emulator.h"
 #include "file_explorer.h"
 
 
-class ControlPanel{
+class ControlPanel : public IWidget {
   public:
     ControlPanel(rem8Cpp& emulator, ImGuiIO& io);
     
-    void render();
+    void render() override;
     bool pause() const;
     uint16_t load_addr() const;
     uint16_t start_addr() const;
