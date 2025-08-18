@@ -47,11 +47,9 @@ void WidgetRunner::render() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-
   for (const auto& widget : m_widgets) {
     widget->render();
   }
-
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

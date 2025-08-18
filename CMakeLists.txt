@@ -29,6 +29,7 @@ target_sources(
   ${CMAKE_SOURCE_DIR}/src/emulator.cpp
 
   ${CMAKE_SOURCE_DIR}/src/user_interface/window.cpp
+  ${CMAKE_SOURCE_DIR}/src/user_interface/graphics.cpp
 
   ${CMAKE_SOURCE_DIR}/src/widgets/widgets.cpp
   ${CMAKE_SOURCE_DIR}/src/widgets/control_panel.cpp

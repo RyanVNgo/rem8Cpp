@@ -3,8 +3,6 @@
  */
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -12,15 +10,11 @@
 
 #include "emulator.h"
 #include "user_interface/window.h"
+#include "user_interface/graphics.h"
 #include "widgets/widgets.h"
 #include "widgets/control_panel.h"
 #include "utilities/file.h"
-#include "utilities/instrumentor.h"
 
-
-void initialize_screen_texture(GLuint& texture, size_t width, size_t height);
-void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data);
-void draw_screen_texture(GLuint texture);
 
 int main() {
   if (!initialize_glfw()) {
@@ -120,48 +114,5 @@ int main() {
 
   terminate_glfw();
   return 0;
-}
-
-void initialize_screen_texture(GLuint& texture, size_t width, size_t height) {
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(
-      GL_TEXTURE_2D, 
-      0, 
-      GL_RGB32F,
-      width, 
-      height, 
-      0, 
-      GL_RGB, 
-      GL_UNSIGNED_BYTE, 
-      nullptr
-  ); 
-}
-
-void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data) {
-  PROFILE_FUNCTION();
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexSubImage2D(
-      GL_TEXTURE_2D,
-      0, 0, 0,
-      width, height,
-      GL_RGB,
-      GL_UNSIGNED_BYTE,
-      data.data()
-  );
-}
-
-void draw_screen_texture(GLuint texture) {
-  PROFILE_FUNCTION();
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glEnable(GL_TEXTURE_2D);
-  glBegin(GL_QUADS);
-  glTexCoord2f(0.0f, 0.0f); glVertex2f(-1, 1);
-  glTexCoord2f(1.0f, 0.0f); glVertex2f(1, 1);
-  glTexCoord2f(1.0f, 1.0f); glVertex2f(1, -1);
-  glTexCoord2f(0.0f, 1.0f); glVertex2f(-1, -1);
-  glEnd();
 }
 
