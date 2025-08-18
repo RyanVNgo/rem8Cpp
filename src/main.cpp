@@ -39,9 +39,8 @@ int main() {
 
   size_t screen_width = emulator.width();
   size_t screen_height = emulator.height();
-  GLuint screen_texture;
+  Screen screen{screen_width, screen_height};
   std::vector<unsigned char> screen_buffer(screen_width * screen_height * 3);
-  initialize_screen_texture(screen_texture, screen_width, screen_height);
 
   // Main loop
   double last_time = 0;
@@ -87,13 +86,13 @@ int main() {
     }
 
     emulator.get_screen_rgb(screen_buffer);
-    update_screen_texture(screen_texture, screen_width, screen_height, screen_buffer);
+    screen.update(0, 0, screen_width, screen_height, screen_buffer.data());
 
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    draw_screen_texture(screen_texture);
 
+    screen.draw();
     widget_runner.render();
 
     if (control_panel.reload()) {

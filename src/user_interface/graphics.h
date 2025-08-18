@@ -5,10 +5,30 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <vector>
 
 
-void initialize_screen_texture(GLuint& texture, size_t width, size_t height);
-void update_screen_texture(GLuint texture, size_t width, size_t height, std::vector<unsigned char>& data);
-void draw_screen_texture(GLuint texture);
+class Screen {
+  public:
+    Screen(std::size_t width, std::size_t height);
+    ~Screen();
+
+    void update(
+        std::size_t x_offset,
+        std::size_t y_offset,
+        std::size_t width,
+        std::size_t height,
+        const uint8_t* data
+    );
+
+    void draw() const;
+
+    Screen(const Screen& other) = delete;
+    Screen(Screen&& other) = delete;
+    Screen& operator=(const Screen& other) = delete;
+    Screen& operator=(Screen&& other) = delete;
+
+  private:
+    GLuint m_id{0};
+
+};
 
