@@ -19,9 +19,9 @@ class FileExplorer {
 
   private:
     bool shown_;
-    std::filesystem::path selected_path_;
-    std::filesystem::path temp_dir_;
-    std::filesystem::path temp_path_;
+    std::filesystem::path m_selected_path;
+    std::filesystem::path m_temp_dir;
+    std::filesystem::path m_temp_path;
 
 };
 

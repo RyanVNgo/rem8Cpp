@@ -9,9 +9,12 @@
 #include <vector>
 
 
+//---------------------------------------------------
+// rem8Cpp
+//---------------------------------------------------
+
 class rem8Cpp {
   public:
-    // Operational methods
     rem8Cpp();
 
     void cycle();
@@ -26,7 +29,6 @@ class rem8Cpp {
     void set_key(uint8_t key);
     void unset_key(uint8_t key);
 
-    // Diagnositc methods
     std::size_t width() const;
     std::size_t height() const;
 
@@ -42,22 +44,22 @@ class rem8Cpp {
     uint8_t delay_timer() const;
 
   private:
-    std::size_t width_;
-    std::size_t height_;
-    std::vector<uint8_t> screen_;
+    std::size_t m_width;
+    std::size_t m_height;
+    std::vector<uint8_t> m_screen;
 
-    uint8_t data_registers_[0x10];
-    uint16_t I_register_;
-    uint16_t program_counter_;
-    uint16_t stack_pointer_;
-    uint16_t sprite_addr_;
-    uint8_t key_[0x10];
-    uint8_t key_binds_[0x10];
-    bool key_pressed_;
-    uint8_t sound_timer_;
-    uint8_t delay_timer_;
+    uint8_t m_data_registers[0x10];
+    uint16_t m_I_register;
+    uint16_t m_program_counter;
+    uint16_t m_stack_pointer;
+    uint16_t m_sprite_addr;
+    uint8_t m_key[0x10];
+    uint8_t m_key_binds[0x10];
+    bool m_key_pressed;
+    uint8_t m_sound_timer;
+    uint8_t m_delay_timer;
 
-    std::vector<uint8_t> memory_;
+    std::vector<uint8_t> m_memory;
 
     void _stack_push_pc();
     void _stack_pull_pc();
