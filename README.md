@@ -4,7 +4,8 @@ An enhanced C++ version of [rem8C](https://github.com/RyanVNgo/rem8C).
 
 ## Project Dependencies
 > [!IMPORTANT]
-> This project requires `vcpkg` for package installation and `cmake` for building.
+> This project requires `vcpkg` for package installation and `CMake` for building. If you need help
+> setting up vcpkg for CMake, I suggest referring the official documentation found [here](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-bash#1---set-up-vcpkg).
 
 
 ## Downloading and Building
@@ -33,6 +34,7 @@ In the project home directory, create a file called `CMakeUserPresets.json` and 
 ```
 
 Replace `{PATH_TO_VCPKG_DIRECTORY}` with the path to your downloaded and setup vcpkg directory — for example `/home/user/tools/vcpkg/`.
+For more information on setting up this file, I suggest referring to the official documentation found [here](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-bash#4---build-and-run-the-project).
 
 ### Downlaod packages and build project
 ```sh
