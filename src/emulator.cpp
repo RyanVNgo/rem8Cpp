@@ -31,28 +31,28 @@
 //---------------------------------------------------
 
 rem8Cpp::rem8Cpp() 
-  : width_(REM8CPP_SCREEN_WIDTH),
-    height_(REM8CPP_SCREEN_HEIGHT),
-    screen_(width_ * height_, 0x00),
-    program_counter_(0x200),
-    stack_pointer_(0x200 - 0x01),
-    sprite_addr_(FONT_SET_ADDR),
-    key_pressed_(false),
-    sound_timer_(0x00),
-    delay_timer_(0x00),
-    memory_(REM8CPP_MAX_ADDR, 0x00)
+  : m_width(REM8CPP_SCREEN_WIDTH),
+    m_height(REM8CPP_SCREEN_HEIGHT),
+    m_screen(m_width * m_height, 0x00),
+    m_program_counter(0x200),
+    m_stack_pointer(0x200 - 0x01),
+    m_sprite_addr(FONT_SET_ADDR),
+    m_key_pressed(false),
+    m_sound_timer(0x00),
+    m_delay_timer(0x00),
+    m_memory(REM8CPP_MAX_ADDR, 0x00)
 { 
-  _sprite_set(sprite_addr_);
-  key_binds_[0x1] = '1'; key_binds_[0x2] = '2'; key_binds_[0x3] = '3'; key_binds_[0xC] = '4';
-  key_binds_[0x4] = 'q'; key_binds_[0x5] = 'w'; key_binds_[0x6] = 'e'; key_binds_[0xD] = 'r';
-  key_binds_[0x7] = 'a'; key_binds_[0x8] = 's'; key_binds_[0x9] = 'd'; key_binds_[0xE] = 'f';
-  key_binds_[0xA] = 'z'; key_binds_[0x0] = 'x'; key_binds_[0xB] = 'c'; key_binds_[0xF] = 'v';
-  memset(key_, 0x00, sizeof(uint8_t) * 0x10);
+  _sprite_set(m_sprite_addr);
+  m_key_binds[0x1] = '1'; m_key_binds[0x2] = '2'; m_key_binds[0x3] = '3'; m_key_binds[0xC] = '4';
+  m_key_binds[0x4] = 'q'; m_key_binds[0x5] = 'w'; m_key_binds[0x6] = 'e'; m_key_binds[0xD] = 'r';
+  m_key_binds[0x7] = 'a'; m_key_binds[0x8] = 's'; m_key_binds[0x9] = 'd'; m_key_binds[0xE] = 'f';
+  m_key_binds[0xA] = 'z'; m_key_binds[0x0] = 'x'; m_key_binds[0xB] = 'c'; m_key_binds[0xF] = 'v';
+  memset(m_key, 0x00, sizeof(uint8_t) * 0x10);
 }
 
 void rem8Cpp::cycle() {
-  uint8_t msb = memory_[program_counter_++];
-  uint8_t lsb = memory_[program_counter_++];
+  uint8_t msb = m_memory[m_program_counter++];
+  uint8_t lsb = m_memory[m_program_counter++];
   
   switch (msb & 0xF0) {
     case 0x00:
@@ -149,36 +149,36 @@ void rem8Cpp::cycle() {
 }
 
 const std::vector<uint8_t>& rem8Cpp::get_screen() const {
-  return screen_;
+  return m_screen;
 }
 
 void rem8Cpp::get_screen_rgb(std::vector<unsigned char>& buffer) const {
-  for (std::size_t i = 0; i < screen_.size(); i++) {
-    memset(buffer.data() + i * 3, (screen_[i] & 0x01) * UCHAR_MAX, sizeof(unsigned char) * 3);
+  for (std::size_t i = 0; i < m_screen.size(); i++) {
+    memset(buffer.data() + i * 3, (m_screen[i] & 0x01) * UCHAR_MAX, sizeof(unsigned char) * 3);
   }
 }
 
 void rem8Cpp::set_program_counter(uint16_t addr) {
   if (addr >= REM8CPP_MAX_ADDR) return;
-  program_counter_ = addr;
+  m_program_counter = addr;
 }
 
 void rem8Cpp::load_rom(uint16_t addr, std::vector<char> data, size_t size) {
   if (addr + size >= REM8CPP_MAX_ADDR) return;
-  memset(memory_.data(), 0x00, sizeof(uint8_t) * memory_.size());
-  memcpy(&memory_[addr], data.data(), size);
+  memset(m_memory.data(), 0x00, sizeof(uint8_t) * m_memory.size());
+  memcpy(&m_memory[addr], data.data(), size);
 }
 
 void rem8Cpp::update_timers() {
-  if (delay_timer_ > 0) delay_timer_--;
-  if (sound_timer_ > 0) sound_timer_--;
+  if (m_delay_timer > 0) m_delay_timer--;
+  if (m_sound_timer > 0) m_sound_timer--;
 }
 
 void rem8Cpp::set_key(uint8_t key) {
   for (int i = 0; i < 16; i++) {
-    if (key_binds_[i] == key) {
-      key_[i] = KEY_ON;
-      key_pressed_ = true;
+    if (m_key_binds[i] == key) {
+      m_key[i] = KEY_ON;
+      m_key_pressed = true;
       break;
     }
   }
@@ -186,9 +186,9 @@ void rem8Cpp::set_key(uint8_t key) {
 
 void rem8Cpp::unset_key(uint8_t key) {
   for (int i = 0; i < 16; i++) {
-    if (key_binds_[i] == key) {
-      key_[i] = KEY_OFF;
-      key_pressed_ = false;
+    if (m_key_binds[i] == key) {
+      m_key[i] = KEY_OFF;
+      m_key_pressed = false;
       break;
     }
   }
@@ -198,71 +198,71 @@ void rem8Cpp::unset_key(uint8_t key) {
 // Diagnositc methods
 
 std::size_t rem8Cpp::width() const {
-  return width_;
+  return m_width;
 }
 
 std::size_t rem8Cpp::height() const {
-  return height_;
+  return m_height;
 }
 
 uint16_t rem8Cpp::program_counter() const {
-  return program_counter_;
+  return m_program_counter;
 }
 
 uint8_t rem8Cpp::read_memory(uint16_t addr) const {
-  return memory_[addr];
+  return m_memory[addr];
 }
 
 uint8_t rem8Cpp::data_register(uint8_t reg) const {
   if (reg > 0x10) return 0xFF;
-  return data_registers_[reg];
+  return m_data_registers[reg];
 }
 
 uint16_t rem8Cpp::I_register() const {
-  return I_register_;
+  return m_I_register;
 }
 
 uint16_t rem8Cpp::stack_pointer() const {
-  return stack_pointer_;
+  return m_stack_pointer;
 }
 
 uint8_t rem8Cpp::key(uint8_t key) const {
   for (int i = 0; i < 16; i++) {
-    if (key_binds_[i] == key) {
-      return key_[i];
+    if (m_key_binds[i] == key) {
+      return m_key[i];
     }
   }
   return 0xFF;
 }
 
 bool rem8Cpp::key_pressed() const {
-  return key_pressed_;
+  return m_key_pressed;
 }
 
 uint8_t rem8Cpp::sound_timer() const {
-  return sound_timer_;
+  return m_sound_timer;
 }
 
 uint8_t rem8Cpp::delay_timer() const {
-  return delay_timer_;
+  return m_delay_timer;
 }
 
 
 // Private methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 
 void rem8Cpp::_stack_push_pc() {
-  memory_[stack_pointer_] = program_counter_ & 0xFF;
-  stack_pointer_--;
-  memory_[stack_pointer_] = (program_counter_ >> 8) & 0xFF;
-  stack_pointer_--;
+  m_memory[m_stack_pointer] = m_program_counter & 0xFF;
+  m_stack_pointer--;
+  m_memory[m_stack_pointer] = (m_program_counter >> 8) & 0xFF;
+  m_stack_pointer--;
 }
 
 void rem8Cpp::_stack_pull_pc() {
-  stack_pointer_++;
-  uint8_t msb = memory_[stack_pointer_];
-  stack_pointer_++;
-  uint8_t lsb = memory_[stack_pointer_];
-  program_counter_ = (msb << 8) | lsb;
+  m_stack_pointer++;
+  uint8_t msb = m_memory[m_stack_pointer];
+  m_stack_pointer++;
+  uint8_t lsb = m_memory[m_stack_pointer];
+  m_program_counter = (msb << 8) | lsb;
 }
 
 void rem8Cpp::_sprite_set(uint16_t loc) {
@@ -284,7 +284,7 @@ void rem8Cpp::_sprite_set(uint16_t loc) {
     0xF0, 0x80, 0xF0, 0x80, 0xF0, /* E */
     0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
   };
-  memcpy(&memory_[loc], sprite_data, sizeof(sprite_data));
+  memcpy(&m_memory[loc], sprite_data, sizeof(sprite_data));
 }
 
 char rem8Cpp::_sprite_draw(uint8_t X, uint8_t Y, char height) {
@@ -292,19 +292,19 @@ char rem8Cpp::_sprite_draw(uint8_t X, uint8_t Y, char height) {
 
   std::size_t X_pos = X;
   std::size_t  Y_pos = Y;
-  if (X >= width_ || Y >= height_) {
-    X_pos = X % width_;
-    Y_pos = Y % height_;
+  if (X >= m_width || Y >= m_height) {
+    X_pos = X % m_width;
+    Y_pos = Y % m_height;
   }
 
   for (int y = 0; y < height; y++) {
-    uint8_t sprite_row = memory_[I_register_ + y];
-    if (Y_pos + y >= height_) break;
+    uint8_t sprite_row = m_memory[m_I_register + y];
+    if (Y_pos + y >= m_height) break;
     for (int x = 0; x < 8; x++) {
-      if (X_pos + x >= width_) continue;
-      uint8_t init_val = screen_[X_pos + x + (Y_pos + y) * width_];
-      screen_[X_pos + x + (Y_pos + y) * width_] ^= (sprite_row >> (7 - x)) & 0x01;
-      if (screen_[X_pos + x + (Y_pos + y) * width_] == 0 && init_val != 0) unset = 1;
+      if (X_pos + x >= m_width) continue;
+      uint8_t init_val = m_screen[X_pos + x + (Y_pos + y) * m_width];
+      m_screen[X_pos + x + (Y_pos + y) * m_width] ^= (sprite_row >> (7 - x)) & 0x01;
+      if (m_screen[X_pos + x + (Y_pos + y) * m_width] == 0 && init_val != 0) unset = 1;
     }
   }
 
@@ -329,7 +329,7 @@ void rem8Cpp::_instr_0NNN() {
 
 // Clear the screen
 void rem8Cpp::_instr_00E0() {
-  memset(screen_.data(), 0x00, screen_.size() * sizeof(uint8_t));
+  memset(m_screen.data(), 0x00, m_screen.size() * sizeof(uint8_t));
   return;
 }
 
@@ -340,145 +340,145 @@ void rem8Cpp::_instr_00EE() {
 
 // Jump to address NNN
 void rem8Cpp::_instr_1NNN(uint8_t msb, uint8_t lsb) {
-  program_counter_ = ((msb & 0x0F) << 8) | lsb;
+  m_program_counter = ((msb & 0x0F) << 8) | lsb;
 }
 
 // Execute subroutine starting at address NNN
 void rem8Cpp::_instr_2NNN(uint8_t msb, uint8_t lsb) {
   _stack_push_pc();
-  program_counter_ = ((msb & 0x0F) << 8) | lsb;
+  m_program_counter = ((msb & 0x0F) << 8) | lsb;
 }
 
 // Skip following instruction if VX == NN
 void rem8Cpp::_instr_3XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
-  if (data_registers_[X] == lsb) program_counter_ += INSTR_SIZE;
+  if (m_data_registers[X] == lsb) m_program_counter += INSTR_SIZE;
 }
 
 // Skip following instruction if VX != NN
 void rem8Cpp::_instr_4XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
-  if (data_registers_[X] != lsb) program_counter_ += INSTR_SIZE;
+  if (m_data_registers[X] != lsb) m_program_counter += INSTR_SIZE;
 }
 
 // Skip following instruction if VX == VY
 void rem8Cpp::_instr_5XY0(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  if (data_registers_[X] == data_registers_[Y]) program_counter_ += INSTR_SIZE;
+  if (m_data_registers[X] == m_data_registers[Y]) m_program_counter += INSTR_SIZE;
 }
 
 // Store value NN in VX
 void rem8Cpp::_instr_6XNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
-  data_registers_[X] = lsb;
+  m_data_registers[X] = lsb;
 }
 
 // Add value NN to VX
 void rem8Cpp::_instr_7XNN(uint8_t msb, uint8_t lsb) {
-  data_registers_[msb & 0x0F] += lsb;
+  m_data_registers[msb & 0x0F] += lsb;
 }
 
 // Store the value of VY in VX
 void rem8Cpp::_instr_8XY0(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  data_registers_[X] = data_registers_[Y];
+  m_data_registers[X] = m_data_registers[Y];
 }
 
 // Set VX to VX | VY , reset 0x0F register
 void rem8Cpp::_instr_8XY1(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  data_registers_[X] |= data_registers_[Y];
-  data_registers_[0x0F] = 0x00;
+  m_data_registers[X] |= m_data_registers[Y];
+  m_data_registers[0x0F] = 0x00;
 }
 
 // Set VX to VX & VY , reset 0x0F register
 void rem8Cpp::_instr_8XY2(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  data_registers_[X] &= data_registers_[Y];
-  data_registers_[0x0F] = 0x00;
+  m_data_registers[X] &= m_data_registers[Y];
+  m_data_registers[0x0F] = 0x00;
 }
 
 // Set VX to VX ^ VY , reset 0x0F register
 void rem8Cpp::_instr_8XY3(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  data_registers_[X] ^= data_registers_[Y];
-  data_registers_[0x0F] = 0x00;
+  m_data_registers[X] ^= m_data_registers[Y];
+  m_data_registers[0x0F] = 0x00;
 }
 
 // Set VX to VX + VY , if overflow VF = 0x01
 void rem8Cpp::_instr_8XY4(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  uint8_t X_init = data_registers_[X];
-  data_registers_[X] += data_registers_[Y];
-  if (data_registers_[X] < X_init) data_registers_[0x0F] = 0x01;
-  else data_registers_[0x0F] = 0x00;
+  uint8_t X_init = m_data_registers[X];
+  m_data_registers[X] += m_data_registers[Y];
+  if (m_data_registers[X] < X_init) m_data_registers[0x0F] = 0x01;
+  else m_data_registers[0x0F] = 0x00;
 }
 
 // Set VX to VX - VY , if borrow VF = 0x00
 void rem8Cpp::_instr_8XY5(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  uint8_t X_init = data_registers_[X];
-  data_registers_[X] -= data_registers_[Y];
-  if (X_init >= data_registers_[Y]) data_registers_[0x0F] = 0x01;
-  else data_registers_[0x0F] = 0x00;
+  uint8_t X_init = m_data_registers[X];
+  m_data_registers[X] -= m_data_registers[Y];
+  if (X_init >= m_data_registers[Y]) m_data_registers[0x0F] = 0x01;
+  else m_data_registers[0x0F] = 0x00;
 }
 
 // Set VX to VY >> 1 , set VF to VY LSb
 void rem8Cpp::_instr_8XY6(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  uint8_t lsbit  = data_registers_[Y] & 0x01;
-  data_registers_[X] = data_registers_[Y] >> 1;
-  data_registers_[0x0F] = lsbit;
+  uint8_t lsbit  = m_data_registers[Y] & 0x01;
+  m_data_registers[X] = m_data_registers[Y] >> 1;
+  m_data_registers[0x0F] = lsbit;
 }
 
 /* Set VX to VY - VX , if borrow VF = 0x00 */
 void rem8Cpp::_instr_8XY7(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  uint8_t X_init = data_registers_[X];
-  data_registers_[X] = data_registers_[Y] - data_registers_[X];
-  if (X_init <= data_registers_[Y]) data_registers_[0x0F] = 0x01;
-  else data_registers_[0x0F] = 0x00;
+  uint8_t X_init = m_data_registers[X];
+  m_data_registers[X] = m_data_registers[Y] - m_data_registers[X];
+  if (X_init <= m_data_registers[Y]) m_data_registers[0x0F] = 0x01;
+  else m_data_registers[0x0F] = 0x00;
 }
 
 /* Set VX to VY << 1 , set VF to VY MSb */
 void rem8Cpp::_instr_8XYE(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  uint8_t msbit = ((data_registers_[Y] & 0x80) != 0);
-  data_registers_[X] = data_registers_[Y] << 1;
-  data_registers_[0x0F] = msbit;
+  uint8_t msbit = ((m_data_registers[Y] & 0x80) != 0);
+  m_data_registers[X] = m_data_registers[Y] << 1;
+  m_data_registers[0x0F] = msbit;
 }
 
 /* Skip following instruction if VX != VY */
 void rem8Cpp::_instr_9XY0(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
-  if (data_registers_[X] != data_registers_[Y]) program_counter_ += INSTR_SIZE;
+  if (m_data_registers[X] != m_data_registers[Y]) m_program_counter += INSTR_SIZE;
 }
 
 /* Store NNN in addr register */
 void rem8Cpp::_instr_ANNN(uint8_t msb, uint8_t lsb) {
-  I_register_ = ((msb & 0x0F) << 8) | lsb;
+  m_I_register = ((msb & 0x0F) << 8) | lsb;
 }
 
 /* Jump to address NNN + V0 */
 void rem8Cpp::_instr_BNNN(uint8_t msb, uint8_t lsb) {
-  program_counter_ = (((msb & 0x0F) << 8) | lsb) + data_registers_[0];
+  m_program_counter = (((msb & 0x0F) << 8) | lsb) + m_data_registers[0];
 }
 
 /* Set VX to random num with mask NN  */
 void rem8Cpp::_instr_CXNN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
-  data_registers_[X] = (rand() % 0xFF) & lsb;
+  m_data_registers[X] = (rand() % 0xFF) & lsb;
 }
 
 /* Draw sprite at (VX, VY) 8px wide and Npx tall */
@@ -486,71 +486,71 @@ void rem8Cpp::_instr_DXYN(uint8_t msb, uint8_t lsb) {
   uint8_t X = _msb_reg_idx(msb);
   uint8_t Y = _lsb_reg_idx(lsb);
   uint8_t N = lsb & 0x0F;
-  data_registers_[0x0F] = _sprite_draw(data_registers_[X], data_registers_[Y], N);
+  m_data_registers[0x0F] = _sprite_draw(m_data_registers[X], m_data_registers[Y], N);
 }
 
 /* Skip following instruction if key == VX */
 void rem8Cpp::_instr_EX9E(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  uint8_t X_val = data_registers_[X] & 0x0F;
-  if (key_[X_val] == KEY_ON) program_counter_ += INSTR_SIZE;
+  uint8_t X_val = m_data_registers[X] & 0x0F;
+  if (m_key[X_val] == KEY_ON) m_program_counter += INSTR_SIZE;
 }
 
 /* Skip following instruction if key != VX */
 void rem8Cpp::_instr_EXA1(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  uint8_t X_val = data_registers_[X] & 0x0F;
-  if (key_[X_val] == KEY_OFF) program_counter_ += INSTR_SIZE; 
+  uint8_t X_val = m_data_registers[X] & 0x0F;
+  if (m_key[X_val] == KEY_OFF) m_program_counter += INSTR_SIZE; 
 }
 
 /* Store delay timer into VX */
 void rem8Cpp::_instr_FX07(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  data_registers_[X] = delay_timer_;
+  m_data_registers[X] = m_delay_timer;
 }
 
 /* Wait for keypress and store result in VX */
 void rem8Cpp::_instr_FX0A(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
   for (int i = 0; i < 16; i++) {
-    if (key_[i] == KEY_OFF && key_pressed_) {
-      data_registers_[X] = i;
+    if (m_key[i] == KEY_OFF && m_key_pressed) {
+      m_data_registers[X] = i;
       return;
     }
   }
-  program_counter_ -= 2;
+  m_program_counter -= 2;
 }
 
 /* Set delay timer to value of VX */
 void rem8Cpp::_instr_FX15(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  delay_timer_ = data_registers_[X];
+  m_delay_timer = m_data_registers[X];
 }
 
 /* Set sound timer to value of VX */
 void rem8Cpp::_instr_FX18(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  sound_timer_ = data_registers_[X];
+  m_sound_timer = m_data_registers[X];
 }
 
 /* Add value of VX to addr register  */
 void rem8Cpp::_instr_FX1E(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  I_register_ += data_registers_[X];
+  m_I_register += m_data_registers[X];
 }
 
 /* Set addr register to sprite address of VX */
 void rem8Cpp::_instr_FX29(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  I_register_ = data_registers_[X] * SPRITE_WIDTH + sprite_addr_;
+  m_I_register = m_data_registers[X] * SPRITE_WIDTH + m_sprite_addr;
 }
 
 /* Store BCD of VX at addr of addr register */
 void rem8Cpp::_instr_FX33(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
-  uint8_t val = data_registers_[X];
+  uint8_t val = m_data_registers[X];
   for (int i = 2; i >= 0; i--) {
-    memory_[I_register_ + i] = val % 10;
+    m_memory[m_I_register + i] = val % 10;
     val /= 10;
   }
 }
@@ -559,17 +559,17 @@ void rem8Cpp::_instr_FX33(uint8_t msb) {
 void rem8Cpp::_instr_FX55(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
   for (int i = 0; i <= X; i++) {
-    memory_[I_register_ + i] = data_registers_[i];
+    m_memory[m_I_register + i] = m_data_registers[i];
   }
-  I_register_ += X + 1;
+  m_I_register += X + 1;
 }
 
 /* Fill V0 to VX from memory starting at addr register */
 void rem8Cpp::_instr_FX65(uint8_t msb) {
   uint8_t X = _msb_reg_idx(msb);
   for (int i = 0; i <= X; i++) {
-    data_registers_[i] = memory_[I_register_ + i] ;
+    m_data_registers[i] = m_memory[m_I_register + i] ;
   }
-  I_register_ += X + 1;
+  m_I_register += X + 1;
 }
 

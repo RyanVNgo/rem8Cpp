@@ -17,11 +17,11 @@ FileExplorer::FileExplorer()
 { }
 
 void FileExplorer::open(std::filesystem::path init_path) {
-  temp_dir_ = init_path;
+  m_temp_dir = init_path;
   shown_ = true;
 }
 std::filesystem::path FileExplorer::get_selected_path() {
-  return selected_path_;
+  return m_selected_path;
 }
 
 bool FileExplorer::is_shown() {
@@ -32,12 +32,12 @@ void FileExplorer::render() {
   if (!shown_) return;
   ImGui::Begin("File Explorer", &shown_);
 
-  if (ImGui::ArrowButton("Back", ImGuiDir_Up)) { temp_dir_ = temp_dir_.parent_path(); }
+  if (ImGui::ArrowButton("Back", ImGuiDir_Up)) { m_temp_dir = m_temp_dir.parent_path(); }
   ImGui::SameLine();
-  ImGui::Text("%s", temp_path_.c_str());
+  ImGui::Text("%s", m_temp_path.c_str());
   ImGui::SameLine();
   if (ImGui::Button("Open")) { 
-    selected_path_ = temp_path_;
+    m_selected_path = m_temp_path;
     shown_ = false;
   }
 
@@ -47,7 +47,7 @@ void FileExplorer::render() {
 
   std::vector<std::filesystem::path> dir_paths;
   std::vector<std::filesystem::path> file_paths;
-  for (const auto& path : std::filesystem::directory_iterator(temp_dir_)) {
+  for (const auto& path : std::filesystem::directory_iterator(m_temp_dir)) {
       if (path.path().filename().c_str()[0] == '.') { continue; }
       if (!std::filesystem::is_directory(path)) { 
         file_paths.push_back(path);
@@ -63,7 +63,7 @@ void FileExplorer::render() {
       ImGui::TableNextColumn();
       std::string label = path.filename().c_str();
       if (ImGui::Selectable(label.append("/").c_str())) {
-        temp_dir_ = path;
+        m_temp_dir = path;
       }
     }
     
@@ -71,7 +71,7 @@ void FileExplorer::render() {
       ImGui::TableNextColumn();
       std::string label = path.filename().c_str();
       if(ImGui::Selectable(label.c_str())) {
-        temp_path_ = path;
+        m_temp_path = path;
       }
     }
 

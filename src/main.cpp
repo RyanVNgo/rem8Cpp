@@ -2,7 +2,6 @@
  *  @author Ryan V. Ngo
  */
 
-#include "imgui.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -34,21 +33,20 @@ int main() {
   app_window.set_vsync(true);
 
   WidgetRunner widget_runner{app_window.window()};
-  ImGuiIO& io = ImGui::GetIO();
 
   auto emulator = rem8Cpp();
-  auto control_panel = ControlPanel(emulator, io);
+  auto control_panel = ControlPanel(emulator);
 
   widget_runner.add_widget(&control_panel);
 
   size_t screen_width = emulator.width();
   size_t screen_height = emulator.height();
-  Screen screen{screen_width, screen_height};
+  Texture screen_texture{screen_width, screen_height};
   std::vector<unsigned char> screen_buffer(screen_width * screen_height * 3);
 
   // Main loop
   double last_time = 0;
-  uint32_t delay_accumulator = 0;
+  double delay_accumulator = 0;
   while (!app_window.should_close()) {
     glfwPollEvents();
     app_window.is_key_pressed(GLFW_KEY_1) ? emulator.set_key('1') : emulator.unset_key('1'); 
@@ -74,23 +72,20 @@ int main() {
       double elapsed_time = curr_time - last_time;
 
       delay_accumulator += elapsed_time;
-      if (delay_accumulator >= 16) {
+      if (delay_accumulator >= 16.667) {
         emulator.update_timers();
-        delay_accumulator = 0;
+        delay_accumulator = 0.0;
       }
 
       uint32_t cycle_count = elapsed_time / (1000.0f / control_panel.clock_rate());
       for (uint32_t i = 0; i < cycle_count; i++) {
         emulator.cycle();
       }
-
-      last_time = curr_time;
-    } else {
-      last_time = curr_time;
     }
+    last_time = curr_time;
 
     emulator.get_screen_rgb(screen_buffer);
-    screen.update(0, 0, screen_width, screen_height, screen_buffer.data());
+    screen_texture.update(0, 0, screen_width, screen_height, screen_buffer.data());
 
     std::size_t win_width{};
     std::size_t win_height{};
@@ -98,7 +93,7 @@ int main() {
     update_viewport(win_width, win_height);
 
     clear();
-    screen.draw();
+    draw_texture(screen_texture);
     widget_runner.render();
 
     if (control_panel.reload()) {
