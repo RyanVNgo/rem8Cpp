@@ -9,9 +9,12 @@
 #include <vector>
 
 
+//---------------------------------------------------
+// rem8Cpp
+//---------------------------------------------------
+
 class rem8Cpp {
   public:
-    // Operational methods
     rem8Cpp();
 
     void cycle();
@@ -26,7 +29,6 @@ class rem8Cpp {
     void set_key(uint8_t key);
     void unset_key(uint8_t key);
 
-    // Diagnositc methods
     std::size_t width() const;
     std::size_t height() const;
 

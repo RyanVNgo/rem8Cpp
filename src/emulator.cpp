@@ -26,9 +26,9 @@
 #define KEY_OFF               0x0
 
 
-// Public Interface - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
-
-// Operational methods
+//---------------------------------------------------
+// rem8Cpp
+//---------------------------------------------------
 
 rem8Cpp::rem8Cpp() 
   : width_(REM8CPP_SCREEN_WIDTH),

@@ -5,25 +5,6 @@
 
 #include "window.h"
 
-#include <iostream>
-
-
-//---------------------------------------------------
-// General GLFW helper methods
-//---------------------------------------------------
-
-bool initialize_glfw() {
-  if (!glfwInit()) { 
-    std::cerr << "Failed to initialize GLFW" << std::endl;
-    return false; 
-  }
-  return true;
-}
-
-void terminate_glfw() {
-  glfwTerminate();
-}
-
 
 //---------------------------------------------------
 // ApplicationWindow
@@ -33,12 +14,6 @@ ApplicationWindow::ApplicationWindow(const char* name, std::size_t width, std::s
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   m_window = glfwCreateWindow(width, height, name, NULL, NULL);
-  if (!m_window) {
-    glfwTerminate();
-    std::cerr << "Failed to create window" << std::endl;
-    return;
-  }
-  return;
 }
 
 ApplicationWindow::~ApplicationWindow() {
@@ -74,5 +49,13 @@ bool ApplicationWindow::should_close() {
 
 bool ApplicationWindow::is_key_pressed(int glfw_key) {
   return glfwGetKey(m_window, glfw_key) == GLFW_PRESS;
+}
+
+void ApplicationWindow::frame_buff_size(std::size_t& width, std::size_t& height) const {
+  int w{};
+  int h{};
+  glfwGetFramebufferSize(m_window, &w, &h);
+  width = w;
+  height = h;
 }
 

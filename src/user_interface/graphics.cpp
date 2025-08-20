@@ -7,6 +7,23 @@
 #include <GLFW/glfw3.h>
 
 
+//---------------------------------------------------
+// General GL Calls
+//---------------------------------------------------
+
+void update_viewport(std::size_t width, std::size_t height) {
+  glViewport(0, 0, width, height);
+}
+
+void clear() {
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+//---------------------------------------------------
+// Screen
+//---------------------------------------------------
+
 Screen::Screen(std::size_t width, std::size_t height) {
   glGenTextures(1, &m_id);
   glBindTexture(GL_TEXTURE_2D, m_id);

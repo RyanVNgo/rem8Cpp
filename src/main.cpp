@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <iostream>
 
 #include "emulator.h"
 #include "user_interface/window.h"
@@ -17,12 +18,15 @@
 
 
 int main() {
-  if (!initialize_glfw()) {
+  if (!glfwInit()) {
+    std::cerr << "Failed to initialize GLFW" << std::endl;
     return -1;
   }
 
   ApplicationWindow app_window{"rem8C++", 640, 320};
   if (!app_window.valid()) {
+    std::cerr << "Failed to create application window" << std::endl;
+    glfwTerminate();
     return -1;
   }
 
@@ -88,10 +92,12 @@ int main() {
     emulator.get_screen_rgb(screen_buffer);
     screen.update(0, 0, screen_width, screen_height, screen_buffer.data());
 
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    std::size_t win_width{};
+    std::size_t win_height{};
+    app_window.frame_buff_size(win_width, win_height);
+    update_viewport(win_width, win_height);
 
+    clear();
     screen.draw();
     widget_runner.render();
 
@@ -111,7 +117,7 @@ int main() {
     app_window.swap_buffers();
   }
 
-  terminate_glfw();
+  glfwTerminate();
   return 0;
 }
 

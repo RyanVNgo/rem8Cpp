@@ -11,14 +11,6 @@
 
 
 //---------------------------------------------------
-// General GLFW helper methods
-//---------------------------------------------------
-
-[[nodiscard]] bool initialize_glfw();
-
-void terminate_glfw();
-
-//---------------------------------------------------
 // ApplicationWindow
 //---------------------------------------------------
 
@@ -33,6 +25,7 @@ class ApplicationWindow {
     void swap_buffers();
     bool should_close();
     bool is_key_pressed(int glfw_key);
+    void frame_buff_size(std::size_t& width, std::size_t& height) const;
 
     GLFWwindow* window() const { return m_window; }
 

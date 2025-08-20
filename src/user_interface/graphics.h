@@ -7,6 +7,17 @@
 #include <GL/glew.h>
 
 
+//---------------------------------------------------
+// General GL Calls
+//---------------------------------------------------
+
+void update_viewport(std::size_t width, std::size_t height);
+void clear();
+
+//---------------------------------------------------
+// Screen
+//---------------------------------------------------
+
 class Screen {
   public:
     Screen(std::size_t width, std::size_t height);
