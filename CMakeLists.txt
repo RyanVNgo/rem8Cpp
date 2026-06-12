@@ -15,14 +15,17 @@ endif()
 
 project(rem8C++ VERSION 1.1.0 LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 set(CMAKE_CXX_STANDARD              20)
-set(CMAKE_CXX_COMPILER             g++)
 set(CMAKE_CXX_STANDARD_REQUIRED     ON)
-add_compile_options(-Wall -Wextra -Wpedantic)
 
 add_executable(${PROJECT_NAME})
+
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/

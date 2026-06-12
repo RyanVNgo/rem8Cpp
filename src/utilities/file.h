@@ -1,7 +1,3 @@
-/*  @file   file.h
- *  @brief  Declaration of file utilities.
- *  @author Ryan V. Ngo
- */
 
 #pragma once
 

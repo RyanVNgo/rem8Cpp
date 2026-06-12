@@ -1,6 +1,3 @@
-/*  @file   graphics.h
- *  @author Ryan V. Ngo
- */
 
 #pragma once
 
@@ -12,28 +9,28 @@
 //---------------------------------------------------
 
 class Texture {
-  public:
-    Texture(std::size_t width, std::size_t height);
-    ~Texture();
+    public:
+        Texture(std::size_t width, std::size_t height);
+        ~Texture();
 
-    void update(
-        std::size_t x_offset,
-        std::size_t y_offset,
-        std::size_t width,
-        std::size_t height,
-        const uint8_t* data
-    );
+        void update(
+                std::size_t x_offset,
+                std::size_t y_offset,
+                std::size_t width,
+                std::size_t height,
+                const uint8_t* data
+                );
 
-    void bind() const;
-    void unbind() const;
+        void bind() const;
+        void unbind() const;
 
-    Texture(const Texture& other) = delete;
-    Texture(Texture&& other) = delete;
-    Texture& operator=(const Texture& other) = delete;
-    Texture& operator=(Texture&& other) = delete;
+        Texture(const Texture& other) = delete;
+        Texture(Texture&& other) = delete;
+        Texture& operator=(const Texture& other) = delete;
+        Texture& operator=(Texture&& other) = delete;
 
-  private:
-    GLuint m_id{0};
+    private:
+        GLuint m_id{0};
 
 };
 
