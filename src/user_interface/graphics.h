@@ -4,25 +4,27 @@
 #include <GL/glew.h>
 
 
-//---------------------------------------------------
-// Texture
-//---------------------------------------------------
+/******************************************************************************/
+/* Texture */
+/******************************************************************************/
 
 class Texture {
     public:
-        Texture(std::size_t width, std::size_t height);
+        explicit Texture(std::size_t width, std::size_t height);
+
         ~Texture();
 
-        void update(
+        auto update(
                 std::size_t x_offset,
                 std::size_t y_offset,
                 std::size_t width,
                 std::size_t height,
                 const uint8_t* data
-                );
+        ) noexcept -> void;
 
-        void bind() const;
-        void unbind() const;
+        auto bind() const noexcept -> void;
+
+        auto unbind() const noexcept -> void;
 
         Texture(const Texture& other) = delete;
         Texture(Texture&& other) = delete;
@@ -30,19 +32,19 @@ class Texture {
         Texture& operator=(Texture&& other) = delete;
 
     private:
-        GLuint m_id{0};
+        GLuint id_{0};
 
 };
 
 
-//---------------------------------------------------
-// General GL Calls
-//---------------------------------------------------
+/******************************************************************************/
+/* General GL Calls */
+/******************************************************************************/
 
-void update_viewport(std::size_t width, std::size_t height);
+auto update_viewport(std::size_t width, std::size_t height) noexcept -> void;
 
-void clear();
+auto clear() noexcept -> void;
 
-void draw_texture(const Texture& tex);
+auto draw_texture(const Texture& tex) noexcept -> void;
 
 

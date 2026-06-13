@@ -6,24 +6,38 @@
 #include <cstddef>
 
 
-//---------------------------------------------------
-// ApplicationWindow
-//---------------------------------------------------
+/******************************************************************************/
+/* ApplicationWindow */
+/******************************************************************************/
 
 class ApplicationWindow {
     public:
-        ApplicationWindow(const char* name, std::size_t width, std::size_t height);
+        explicit ApplicationWindow(
+                const char* name,
+                std::size_t width,
+                std::size_t height
+        );
+
         ~ApplicationWindow();
 
-        bool valid();
-        void set_vsync(bool mode);
-        void make_current_context();
-        void swap_buffers();
-        bool should_close();
-        bool is_key_pressed(int glfw_key);
-        void frame_buff_size(std::size_t& width, std::size_t& height) const;
+        [[nodiscard]] auto valid() const noexcept -> bool;
 
-        GLFWwindow* window() const { return m_window; }
+        auto set_vsync(bool mode) noexcept -> void;
+
+        auto make_current_context() noexcept -> void;
+
+        auto swap_buffers() noexcept -> void;
+
+        [[nodiscard]] auto should_close() const noexcept -> bool;
+
+        [[nodiscard]] auto is_key_pressed(int glfw_key) const noexcept -> bool;
+
+        auto frame_buff_size(
+                std::size_t& width,
+                std::size_t& height
+        ) const -> void;
+
+        [[nodiscard]] auto window() const noexcept -> GLFWwindow*;
 
         ApplicationWindow(const ApplicationWindow& other) = delete;
         ApplicationWindow(ApplicationWindow&& other) = delete;
@@ -31,7 +45,7 @@ class ApplicationWindow {
         ApplicationWindow& operator=(ApplicationWindow&& other) = delete;
 
     private:
-        GLFWwindow* m_window;
+        GLFWwindow* window_;
 
 };
 

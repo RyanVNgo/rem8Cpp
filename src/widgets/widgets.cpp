@@ -6,9 +6,9 @@
 #include "imgui_impl_opengl3.h"
 
 
-//---------------------------------------------------
-// WidgetRunner
-//---------------------------------------------------
+/******************************************************************************/
+/* WidgetRunner */
+/******************************************************************************/
 
 WidgetRunner::WidgetRunner(GLFWwindow* window) {
     // Setup Dear ImGui context
@@ -36,15 +36,15 @@ WidgetRunner::~WidgetRunner() {
     ImGui::DestroyContext();
 }
 
-void WidgetRunner::add_widget(IWidget* widget) {
-    m_widgets.push_back(widget);
+auto WidgetRunner::add_widget(IWidget* widget) noexcept -> void {
+    widgets_.push_back(widget);
 }
 
-void WidgetRunner::render() {
+auto WidgetRunner::render() noexcept -> void {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    for (const auto& widget : m_widgets) {
+    for (const auto& widget : widgets_) {
         widget->render();
     }
     ImGui::Render();

@@ -5,6 +5,5 @@
 #include <filesystem>
 
 
-std::vector<char> open_file(std::filesystem::path file_path);
-
+auto open_file(const std::filesystem::path file_path) -> std::vector<char>;
 

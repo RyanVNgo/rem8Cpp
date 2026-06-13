@@ -4,13 +4,13 @@
 #include <GLFW/glfw3.h>
 
 
-//---------------------------------------------------
-// Texture
-//---------------------------------------------------
+/******************************************************************************/
+/* Texture */
+/******************************************************************************/
 
 Texture::Texture(std::size_t width, std::size_t height) {
-    glGenTextures(1, &m_id);
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    glGenTextures(1, &id_);
+    glBindTexture(GL_TEXTURE_2D, id_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(
@@ -23,22 +23,22 @@ Texture::Texture(std::size_t width, std::size_t height) {
             GL_RGB, 
             GL_UNSIGNED_BYTE, 
             nullptr
-            ); 
+    ); 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture::~Texture() {
-    glDeleteTextures(1, &m_id);
+    glDeleteTextures(1, &id_);
 }
 
-void Texture::update(
+auto Texture::update(
         std::size_t x_offset,
         std::size_t y_offset,
         std::size_t width,
         std::size_t height,
         const uint8_t* data
-        ) {
-    glBindTexture(GL_TEXTURE_2D, m_id);
+) noexcept -> void {
+    glBindTexture(GL_TEXTURE_2D, id_);
     glTexSubImage2D(
             GL_TEXTURE_2D,
             0, 
@@ -47,33 +47,33 @@ void Texture::update(
             GL_RGB,
             GL_UNSIGNED_BYTE,
             data
-            );
+    );
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::bind() const {
-    glBindTexture(GL_TEXTURE_2D, m_id);
+auto Texture::bind() const noexcept -> void {
+    glBindTexture(GL_TEXTURE_2D, id_);
 }
 
-void Texture::unbind() const {
+auto Texture::unbind() const noexcept -> void{
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
-//---------------------------------------------------
-// General GL Calls
-//---------------------------------------------------
+/******************************************************************************/
+/* General GL Calls */
+/******************************************************************************/
 
-void update_viewport(std::size_t width, std::size_t height) {
+auto update_viewport(std::size_t width, std::size_t height) noexcept -> void {
     glViewport(0, 0, width, height);
 }
 
-void clear() {
+auto clear() noexcept -> void{
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void draw_texture(const Texture& tex) {
+auto draw_texture(const Texture& tex) noexcept -> void {
     tex.bind();
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);

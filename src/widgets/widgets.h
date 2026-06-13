@@ -8,16 +8,18 @@
 
 class IWidget {
     public:
-        virtual void render() = 0;
+        virtual auto render() noexcept -> void= 0;
 };
 
 class WidgetRunner {
     public:
-        WidgetRunner(GLFWwindow* window);
+        explicit WidgetRunner(GLFWwindow* window);
+
         ~WidgetRunner();
 
-        void add_widget(IWidget* widget);
-        void render();
+        auto add_widget(IWidget* widget) noexcept -> void;
+
+        auto render() noexcept -> void;
 
         WidgetRunner(const WidgetRunner& other) = delete;
         WidgetRunner(WidgetRunner&& other) = delete;
@@ -25,7 +27,7 @@ class WidgetRunner {
         WidgetRunner& operator=(WidgetRunner&& other) = delete;
 
     private:
-        std::vector<IWidget*> m_widgets;
+        std::vector<IWidget*> widgets_;
 
 };
 

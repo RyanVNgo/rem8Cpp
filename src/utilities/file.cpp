@@ -4,7 +4,7 @@
 #include <fstream>
 
 
-std::vector<char> open_file(std::filesystem::path file_path) {
+auto open_file(const std::filesystem::path file_path) -> std::vector<char> {
     std::vector<char> file_bytes(0);
 
     if (std::filesystem::exists(file_path)) {

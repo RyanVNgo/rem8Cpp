@@ -8,16 +8,19 @@ class FileExplorer {
     public:
         FileExplorer();
 
-        void open(std::filesystem::path init_path);
-        std::filesystem::path get_selected_path();
-        bool is_shown();
-        void render();
+        auto open(std::filesystem::path init_path) -> void;
+
+        auto get_selected_path() -> std::filesystem::path;
+
+        [[nodiscard]] auto is_shown() const noexcept -> bool;
+
+        auto render() noexcept -> void;
 
     private:
         bool shown_;
-        std::filesystem::path m_selected_path;
-        std::filesystem::path m_temp_dir;
-        std::filesystem::path m_temp_path;
+        std::filesystem::path selected_path_;
+        std::filesystem::path temp_dir_;
+        std::filesystem::path temp_path_;
 
 };
 
