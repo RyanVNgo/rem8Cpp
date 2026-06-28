@@ -1,13 +1,53 @@
 {
+
   "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+
   "configurePresets": [
     {
-      "name": "vcpkg",
+      "name": "vcpkg-ninja",
+      "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/external/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "debug-ninja",
+      "inherits": "vcpkg-ninja",
+      "displayName": "Ninja Debug Build",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "release-ninja",
+      "inherits": "vcpkg-ninja",
+      "displayName": "Ninja Release Build",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
       }
     }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "rem8Cpp-debug-ninja",
+      "displayName": "rem8Cpp Debug Ninja",
+      "configurePreset": "debug-ninja"
+    },
+    {
+      "name": "rem8Cpp-release-ninja",
+      "displayName": "rem8Cpp Release Ninja",
+      "configurePreset": "release-ninja"
+    }
   ]
+
 }

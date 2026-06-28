@@ -1,0 +1,25 @@
+
+#include "file.h"
+
+#include <fstream>
+
+
+auto open_file(const std::filesystem::path file_path) -> std::vector<char> {
+    std::vector<char> file_bytes(0);
+
+    if (std::filesystem::exists(file_path)) {
+        std::ifstream file(file_path, std::ios::binary);
+
+        file.seekg(0, std::ios::end);
+        std::streampos file_size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        file_bytes.resize(file_size);
+        file.read(file_bytes.data(), file_size);
+
+        file.close();
+    }
+
+    return file_bytes;
+}
+

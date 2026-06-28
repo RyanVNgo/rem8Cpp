@@ -5,24 +5,19 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:          
+jobs:
   test:
-    name: Run Unit Tests
+    name: Build and Run Tests (Docker)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Setup CMake
-        run: |
-          cmake -S tests/ -B tests/build/
+      - name: Build Docker image
+        run: docker build -t rem8cpp-test .
 
-      - name: Build Test Suite
-        run: |
-          cmake --build tests/build/
-
-      - name: Run Tests
-        run: |
-          ctest --test-dir tests/build/
-      
+      - name: Run tests
+        run: docker run --rm rem8cpp-test

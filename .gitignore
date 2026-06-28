@@ -11,5 +11,7 @@ tests/Testing/
 
 CMakeUserPresets.json
 
+compile_commands.json
+
 # *.json
 
