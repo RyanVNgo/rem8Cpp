@@ -17,6 +17,7 @@ target_sources(rem8Cpp.widgets
 )
 target_link_libraries(rem8Cpp.widgets
     PRIVATE
+    imgui
     GLEW::GLEW
     glfw
 )

@@ -2,7 +2,6 @@
 add_subdirectory(widgets)
 add_subdirectory(utilities)
 add_subdirectory(user_interface)
-add_subdirectory(imgui)
 
 add_library(rem8Cpp.emulator STATIC)
 add_library(rem8Cpp::emulator ALIAS rem8Cpp.emulator)
@@ -29,7 +28,7 @@ target_link_libraries(rem8Cpp
         rem8Cpp::widgets
         rem8Cpp::utilities
         rem8Cpp::user_interface
-        rem8Cpp::imgui
+        imgui
         glfw
         GLEW::GLEW
 )

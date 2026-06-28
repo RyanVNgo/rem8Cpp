@@ -13,12 +13,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include_directories(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/rem8Cpp/imgui/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/rem8Cpp/imgui/backend"
+    "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backend"
 )
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
+add_subdirectory(external/imgui)
 add_subdirectory(src/rem8Cpp)
 
