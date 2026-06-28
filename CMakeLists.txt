@@ -23,3 +23,8 @@ find_package(GLEW REQUIRED)
 add_subdirectory(external/imgui)
 add_subdirectory(src/rem8Cpp)
 
+option(BUILD_TESTS "Build the test suite" OFF)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
