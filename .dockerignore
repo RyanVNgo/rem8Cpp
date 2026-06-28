@@ -1,0 +1,6 @@
+build/
+.git/
+.cache/
+compile_commands.json
+imgui.ini
+
