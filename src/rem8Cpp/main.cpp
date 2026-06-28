@@ -6,11 +6,11 @@
 #include <iostream>
 
 #include "emulator.h"
-#include "user_interface/window.h"
-#include "user_interface/graphics.h"
-#include "widgets/widgets.h"
-#include "widgets/control_panel.h"
-#include "utilities/file.h"
+#include <user_interface/window.h>
+#include <user_interface/graphics.h>
+#include <widgets/widgets.h>
+#include <widgets/control_panel.h>
+#include <utilities/file.h>
 
 
 int main() {

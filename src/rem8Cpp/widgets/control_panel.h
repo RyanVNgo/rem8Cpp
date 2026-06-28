@@ -4,11 +4,11 @@
 #include <filesystem>
 #include <chrono>
 
-#include "imgui.h"
-
 #include "widgets.h"
-#include "emulator.h"
 #include "file_explorer.h"
+
+#include <emulator.h>
+#include <imgui/imgui.h>
 
 
 class ControlPanel : public IWidget {
