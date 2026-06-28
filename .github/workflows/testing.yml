@@ -7,22 +7,22 @@ on:
 
 jobs:          
   test:
-    name: Run Unit Tests
+    name: Check Builds and Run Unit Tests
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup CMake
+      - name: Setup Debug Build
         run: |
-          cmake -S tests/ -B tests/build/
+          cmake --preset debug-ninja
 
-      - name: Build Test Suite
+      - name: Build debug and tests
         run: |
-          cmake --build tests/build/
+          cmake --build --preset rem8Cpp-debug-ninja
 
       - name: Run Tests
         run: |
-          ctest --test-dir tests/build/
+          ctest --test-dir build/debug/tests
       
