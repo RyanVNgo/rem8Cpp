@@ -7,8 +7,9 @@ An enhanced C++ version of [rem8C](https://github.com/RyanVNgo/rem8C).
 ```sh
 git clone --recurse-submodules https://github.com/RyanVNgo/rem8Cpp.git
 cd rem8Cpp
-cmake -B build
-cmake --build build
+cmake --preset release-ninja
+cmake --build --preset rem8Cpp-release-ninja
+./build/release/bin/rem8Cpp
 ```
 
 ## Usage
