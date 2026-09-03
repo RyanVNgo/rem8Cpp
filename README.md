@@ -1,3 +1,13 @@
+> [!NOTE]
+> **Archived — no longer maintained.**
+>
+> This project was primarily built as transitory work when adjusting my focus to C++ based development. I experimented
+> with testing methods, build configuration (for which I had chosen to refactor in recent months before archiving),
+> project and code structure, and dependency management. My practices have since evolved, so this repository no
+> longer fully represents my approach to software development and I no longer wish to update/maintain it.
+>
+> Ultimately, this code is preserved as a record of my proficiency at the time.
+
 # rem8C++ - CHIP-8 Emulator
 
 An enhanced C++ version of [rem8C](https://github.com/RyanVNgo/rem8C).
